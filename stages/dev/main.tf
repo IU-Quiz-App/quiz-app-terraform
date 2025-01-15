@@ -23,4 +23,5 @@ provider "aws" {
 module "main" {
   source = "../../modules/main"
   stage  = "dev"
+  domain = "iu-quiz.de"
 }
