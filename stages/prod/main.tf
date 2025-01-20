@@ -17,10 +17,18 @@ terraform {
 
 provider "aws" {
   region              = "eu-central-1"
-  allowed_account_ids = ["ACCOUNT_ID"]
+  allowed_account_ids = ["739275480216"]
+  default_tags {
+    tags = {
+      Environment          = "Prod"
+      Created_by_Terraform = "True"
+    }
+  }
 }
 
 module "main" {
-  source = "../../modules/main"
-  stage  = "prod"
+  source           = "../../modules/main"
+  stage            = "prod"
+  domain           = "iu-quiz.de"
+  hosted_zone_name = "iu-quiz.de"
 }
