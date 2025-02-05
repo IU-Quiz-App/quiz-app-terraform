@@ -21,8 +21,11 @@ module "api_gateway" {
 module "lambda" {
   source                    = "../lambda"
   stage                     = var.stage
-  lambda_bucket_name        = module.s3.lambda_bucket_name
   api_gateway_execution_arn = module.api_gateway.api_gateway_execution_arn
+}
+
+module "dynamodb" {
+  source = "../dynamodb"
 }
 
 module "cloudwatch" {
