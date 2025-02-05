@@ -19,6 +19,7 @@ def lambda_handler(event, context):
 
         for answer in body["answers"]:
             answer["uuid"] = str(uuid.uuid4())
+        #TODO: Use 1, 2, 3, 4 for answer IDs instead of uuids?
 
         item = {
             "course": body["course"],
