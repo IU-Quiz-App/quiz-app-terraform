@@ -17,26 +17,26 @@ Go to your shell (e.g. iterm) and type
 
 ```aws configure --profile PROFILE_NAME```
 
-Choose for PROFILE_NAME name a better name like IU-QUIZ-DEV. Put in the Access Key and Secret Access Key that you retrieved in the previous step. Choose eu-central-1 as default region name. For standard output format you can either just press enter or choose json.
+Choose for PROFILE_NAME name a better name like iu-quiz-dev. Put in the Access Key and Secret Access Key that you retrieved in the previous step. Choose eu-central-1 as default region name. For standard output format you can either just press enter or choose json.
 
 ### Testing Setup
 Type the following command in your console
 
-```aws s3 ls --profile IU-QUIZ-DEV```
+```aws s3 ls --profile iu-quiz-dev```
 
 This should prompt out the s3 buckets of the dev account.
 
-With this mechanism you can easily use different AWS accounts by choosing different profiles. You can repeat the steps with another account (create access key there), choose another profile name like IU-QUIZ-PROD and then you just have to change the command to 
+With this mechanism you can easily use different AWS accounts by choosing different profiles. You can repeat the steps with another account (create access key there), choose another profile name like iu-quiz-prod and then you just have to change the command to 
 
-```aws s3 ls --profile IU-QUIZ-PROD```
+```aws s3 ls --profile iu-quiz-prod```
 
 to get the s3 buckets of the prod account.
 
-If you don't want to type the profile at every request you can also set it as an environment variable:
+If you don't want to type the --profile parameter at every request you can also set it as an environment variable:
 
-```export AWS_PROFILE=IU-QUIZ-DEV```
+```export AWS_PROFILE=iu-quiz-dev```
 
-You can also add this command to your .zshrc or .bashrc depending on what you use for your shell so the profile is set as default for every shell. But you can always override it by typing the export command with a new profile name in your shell. If you want to find out which one is the current profile in your shell use the command:
+You can also add this export command to your .zshrc or .bashrc depending on what you use for your shell so the profile is set as default for every shell. But you can always override it by typing the export command with a new profile name in your shell. If you want to find out which one is the current profile in your shell use the command:
 
 ```env | grep AWS_PROFILE```
 

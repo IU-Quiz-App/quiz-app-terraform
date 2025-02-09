@@ -1,13 +1,13 @@
 # Object definition of a question
 
 {
-    "question_id": 12345,
+    "uuid": "uuid12345",
     "course": "TestKurs",
     "text": "Schafft Philipp es die Testfrage zu deployen?",
-    "visibility": "private",
-    "status": "waiting for approval",
-    "created_at": "2020-02-04 07:46:29.315237",
-    "creator_user_id": "23479lsdfkjPhilipp",
+    "public": false,
+    "status": "waiting_for_approval",
+    "created_at": "2025-02-05T23:30:52.135571",
+    "created_by": "23479lsdfkjPhilipp",
     "answers": [
         {
             "uuid": "uuid123",

@@ -23,11 +23,11 @@ def lambda_handler(event, context):
 
         item = {
             "course": body["course"],
-            "question_id": str(uuid.uuid4()),
+            "uuid": str(uuid.uuid4()),
             "text": body["text"],
             "answers": body["answers"],
-            "creator_user_id": body["creator_user_id"],
-            "visibility": body.get("visibility", "private"),
+            "created_by": body["created_by"],
+            "public": "true" if body.get("public", False) else "false",
             "status": body.get("status", "created"),
             "created_at": datetime.datetime.now().isoformat()
         }
@@ -38,7 +38,7 @@ def lambda_handler(event, context):
         
         return {
             "statusCode": 200,
-            "body": json.dumps({"message": "Frage erfolgreich gespeichert!", "question_id": item["question_id"]})
+            "body": json.dumps({"message": "Frage erfolgreich gespeichert!", "question_id": item["uuid"]})
         }
     
     except Exception as e:
