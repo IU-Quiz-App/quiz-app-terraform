@@ -60,6 +60,13 @@ resource "aws_dynamodb_table" "questions" {
     range_key       = "public"
     projection_type = "ALL"
   }
+
+  # GSI for getting a question by its uuid
+  global_secondary_index {
+      name            = "uuid-index"
+      hash_key        = "uuid"
+      projection_type = "ALL"
+  }
 }
 
 # JSON model
