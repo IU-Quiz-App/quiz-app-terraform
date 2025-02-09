@@ -63,7 +63,7 @@ resource "aws_dynamodb_table" "questions" {
 
   # GSI for getting a question by its uuid
   global_secondary_index {
-      name            = "uuid-index"
+      name            = "uuid_index"
       hash_key        = "uuid"
       projection_type = "ALL"
   }
