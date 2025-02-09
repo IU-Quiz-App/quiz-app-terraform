@@ -38,3 +38,7 @@ override.tf.json
 terraform.rc
 
 *.zip
+/.idea/.gitignore
+/.idea/modules.xml
+/.idea/quiz-app-terraform.iml
+/.idea/vcs.xml
