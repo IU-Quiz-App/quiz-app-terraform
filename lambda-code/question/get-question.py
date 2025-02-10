@@ -26,7 +26,14 @@ def lambda_handler(event, context):
            "course": "TestKurs",
            "uuid": body["uuid"]
         }
-        response = table.get_item(Key=item)
+
+        response = table.query(
+                IndexName="uuid_index",
+                KeyConditionExpression="uuid = :uuid",
+                ExpressionAttributeValues={
+                    ":uuid": uuid
+                }
+            )
 
         return {
             "statusCode": 200,
