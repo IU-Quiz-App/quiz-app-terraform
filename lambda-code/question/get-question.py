@@ -22,7 +22,11 @@ def lambda_handler(event, context):
 
         logger.info("Getting question with uuid: %s", uuid)
 
-        item = table.get_item(Key={"uuid": str(uuid)}).get("Item")
+        item = {
+           "course": body["course"],
+           "uuid": body["uuid"]
+        }
+        response = table.get_item(Key=item)
 
         return {
             "statusCode": 200,
