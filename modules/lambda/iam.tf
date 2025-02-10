@@ -54,7 +54,8 @@ data "aws_iam_policy_document" "lambda_access_dynamodb" {
       "dynamodb:GetItem",
       "dynamodb:PutItem",
       "dynamodb:UpdateItem",
-      "dynamodb:DeleteItem"
+      "dynamodb:DeleteItem",
+      "dynamodb:Query"
     ]
     #TODO: Stärker einschränken
     resources = ["*"]
