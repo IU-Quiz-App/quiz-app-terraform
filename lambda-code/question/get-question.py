@@ -29,9 +29,9 @@ def lambda_handler(event, context):
 
         response = table.query(
                 IndexName="uuid_index",
-                KeyConditionExpression="uuid = :uuid",
+                KeyConditionExpression="uuid = :question_uuid",
                 ExpressionAttributeValues={
-                    ":uuid": uuid
+                    ":question_uuid": uuid
                 }
             )
 
