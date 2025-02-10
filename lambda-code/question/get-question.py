@@ -23,6 +23,7 @@ def lambda_handler(event, context):
         logger.info("Getting question with uuid: %s", uuid)
 
         item = {
+           "course": "TestKurs"
            "uuid": body["uuid"]
         }
         response = table.get_item(Key=item)
