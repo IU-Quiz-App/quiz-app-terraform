@@ -23,14 +23,13 @@ def lambda_handler(event, context):
         logger.info("Getting question with uuid: %s", uuid)
 
         item = {
-           "course": body["course"],
            "uuid": body["uuid"]
         }
         response = table.get_item(Key=item)
 
         return {
             "statusCode": 200,
-            "body": json.dumps(item)
+            "body": json.dumps(response)
         }
 
     except Exception as e:
