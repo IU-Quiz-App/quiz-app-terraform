@@ -8,12 +8,22 @@ variable "hosted_zone_name" {
   type        = string
 }
 
-variable "gateway_domain_name_cloudfront_domain_name" {
-  description = "Name of the cloudfront domain that was created for API Gateway"
+variable "gateway_domain_name" {
+  description = "Domain name of the API Gateway"
   type        = string
 }
 
-variable "gateway_domain_name_cloudfront_zone_id" {
-  description = "Zone ID of the cloudfront domain that was created for API Gateway"
+variable "gateway_hosted_zone_id" {
+  description = "Zone ID of the API Gateway"
+  type        = string
+}
+
+variable "cloudfront_domain_name" {
+  description = "Name of the cloudfront domain that was created for frontend access"
+  type        = string
+}
+
+variable "cloudfront_zone_id" {
+  description = "Zone ID of the cloudfront domain that was created for frontend access"
   type        = string
 }
