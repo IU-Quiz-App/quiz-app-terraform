@@ -27,3 +27,8 @@ variable "post_question_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for POST question"
   type        = string
 }
+
+variable "delete_question_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for DELETE question"
+  type        = string
+}

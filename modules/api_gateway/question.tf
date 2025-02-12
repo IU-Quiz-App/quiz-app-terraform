@@ -49,7 +49,7 @@ resource "aws_apigatewayv2_integration" "gateway_integration_question_delete" {
   connection_type    = "INTERNET"
   description        = "DELETE endpoint for questions"
   integration_method = "POST"
-  integration_uri    = var.post_question_function_invoke_arn
+  integration_uri    = var.delete_question_function_invoke_arn
   response_parameters {
     status_code = 403
     mappings = {

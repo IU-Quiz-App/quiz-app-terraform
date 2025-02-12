@@ -1,4 +1,4 @@
-module "questions" {
+module "question" {
   source                    = "./question"
   stage                     = var.stage
   lambda_execution_role_arn = aws_iam_role.lambda_execution_role.arn
