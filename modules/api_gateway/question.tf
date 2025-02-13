@@ -16,7 +16,7 @@ resource "aws_apigatewayv2_integration" "gateway_integration_question_get" {
 
 resource "aws_apigatewayv2_route" "get_question_route" {
   api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "GET /question"
+  route_key = "GET /question/{uuid}"
   target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_question_get.id}"
 }
 
