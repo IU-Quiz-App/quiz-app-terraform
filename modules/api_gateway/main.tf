@@ -1,6 +1,12 @@
 resource "aws_apigatewayv2_api" "api_gateway" {
   name          = "iu-quiz-api-gateway-${var.stage}"
   protocol_type = "HTTP"
+  # TODO: Try specific origin and only OPTIONS als allowed method
+  cors_configuration {
+    allow_origins = ["*"]
+    allow_methods = ["GET", "PUT", "POST", "DELETE", "OPTIONS", "HEAD"]
+    allow_headers = ["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key", "X-Amz-Security-Token"]
+  }
 }
 
 resource "aws_apigatewayv2_stage" "api_gateway_stage" {

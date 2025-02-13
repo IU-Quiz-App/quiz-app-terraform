@@ -12,14 +12,6 @@ resource "aws_apigatewayv2_integration" "gateway_integration_question_get" {
       "append:header.auth" = "$context.authorizer.authorizerResponse"
     }
   }
-  response_parameters {
-    status_code = 200
-    mappings = {
-      "append:header.Access-Control-Allow-Origin"  = "'*'"
-      "append:header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-      "append:header.Access-Control-Allow-Methods" = "'OPTIONS,GET,POST,PUT,DELETE,PATCH,HEAD'"
-    }
-  }
 }
 
 resource "aws_apigatewayv2_route" "get_question_route" {
@@ -42,14 +34,6 @@ resource "aws_apigatewayv2_integration" "gateway_integration_question_post" {
       "append:header.auth" = "$context.authorizer.authorizerResponse"
     }
   }
-  response_parameters {
-    status_code = 200
-    mappings = {
-      "append:header.Access-Control-Allow-Origin"  = "'*'"
-      "append:header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-      "append:header.Access-Control-Allow-Methods" = "'OPTIONS,GET,POST,PUT,DELETE,PATCH,HEAD'"
-    }
-  }
 }
 
 resource "aws_apigatewayv2_route" "post_question_route" {
@@ -70,14 +54,6 @@ resource "aws_apigatewayv2_integration" "gateway_integration_question_delete" {
     status_code = 403
     mappings = {
       "append:header.auth" = "$context.authorizer.authorizerResponse"
-    }
-  }
-  response_parameters {
-    status_code = 200
-    mappings = {
-      "append:header.Access-Control-Allow-Origin"  = "'*'"
-      "append:header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-      "append:header.Access-Control-Allow-Methods" = "'OPTIONS,GET,POST,PUT,DELETE,PATCH,HEAD'"
     }
   }
 }
