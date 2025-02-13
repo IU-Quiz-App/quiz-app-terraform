@@ -17,42 +17,38 @@ def lambda_handler(event, context):
         "Access-Control-Allow-Headers": "*",
         "Access-Control-Allow-Credentials": "true"
     }
-    
+
     try:
         logger.info("Event: %s", event)
-        
-        uuid = event["pathParameters"].get("uuid")
 
-        logger.info("Getting question with uuid: %s", uuid)
+        user_id = event["queryStringParameters"].get("user_id")
 
         response = table.query(
-                IndexName="uuid_index",
-                KeyConditionExpression="#uuid = :question_uuid",
+                IndexName="user_questions_index",
+                KeyConditionExpression="#created_by = :user_id",
                 ExpressionAttributeNames={
-                    "#uuid": "uuid"
+                    "#created_by": "created_by"
                 },
                 ExpressionAttributeValues={
-                    ":question_uuid": uuid
+                    ":user_id": user_id
                 }
             )
         
-        logger.info("Got question: %s", response)
-
-        if 'Items' not in response or not response['Items']:
-            raise ValueError(f"No question found for UUID: {uuid}")
         
-        item = response.get("Items")[0]
+        logger.info("Got questions: %s", response)
 
-        logger.info("Got items: %s", item)
+        items = response.get("Items")
+
+        logger.info("Got items: %s", items)
 
         return {
             "statusCode": 200,
             "headers": cors_headers,
-            "body": json.dumps(item)
+            "body": json.dumps(items)
         }
-
+    
     except Exception as e:
-        logger.error("Error getting the question: %s", str(e), exc_info=True)
+        logger.error("Error getting the questions: %s", str(e), exc_info=True)
         return {
             "statusCode": 500,
             "headers": cors_headers,

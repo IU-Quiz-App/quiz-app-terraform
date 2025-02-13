@@ -23,6 +23,12 @@ variable "get_question_function_invoke_arn" {
   type        = string
 }
 
+variable "get_questions_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for GET list of questions"
+  type        = string
+
+}
+
 variable "post_question_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for POST question"
   type        = string

@@ -17,6 +17,7 @@ module "api_gateway" {
   certificate_arn                     = module.acm.certificate_arn
   api_gateway_cw_log_group_arn        = module.cloudwatch.api_gateway_cw_log_group_arn
   get_question_function_invoke_arn    = module.lambda.get_question_function_invoke_arn
+  get_questions_function_invoke_arn   = module.lambda.get_questions_function_invoke_arn
   post_question_function_invoke_arn   = module.lambda.post_question_function_invoke_arn
   delete_question_function_invoke_arn = module.lambda.delete_question_function_invoke_arn
 }

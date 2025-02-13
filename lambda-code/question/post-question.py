@@ -38,7 +38,7 @@ def lambda_handler(event, context):
         
         return {
             "statusCode": 200,
-            "body": json.dumps({"message": "Frage erfolgreich gespeichert!", "question_id": item["uuid"]})
+            "body": json.dumps({"message": "Frage erfolgreich gespeichert!", "question": item})
         }
     
     except Exception as e:
