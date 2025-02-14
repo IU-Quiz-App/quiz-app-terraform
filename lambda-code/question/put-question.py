@@ -33,21 +33,33 @@ def lambda_handler(event, context):
         if not response.get("Items"):
             raise ValueError(f"No question found for UUID: {uuid}")
 
-        table.update_item(
-            Key={"uuid": uuid},
-            UpdateExpression="SET course = :course, #text = :text, answers = :answers, #public = :public, #status = :status",
-            ExpressionAttributeNames={
-                "#text": "text",
-                "#public": "public",
-                "#status": "status"
-            },
-            ExpressionAttributeValues={
-                ":course": body["course"], ":text": body["text"], ":answers": body["answers"],
-                ":public": str(body.get("public", False)).lower(), ":status": body.get("status", "created")
-            }
-        )
+        old_item = response["Items"][0]
+        old_course = old_item["course"]
 
-        return {"statusCode": 200, "headers": cors_headers, "body": json.dumps({"message": "Updated successfully!"})}
+        new_course = body.get("course", old_course)
+        updated_item = {
+            "course": new_course,
+            "uuid": old_item["uuid"],
+            "text": body.get("text", old_item["text"]),
+            "answers": body.get("answers", old_item["answers"]),
+            "public": str(body.get("public", old_item["public"])).lower(),
+            "status": body.get("status", old_item["status"]),
+            "created_at": old_item["created_at"],
+            "created_by": old_item["created_by"]
+        }
+
+        table.put_item(Item=updated_item)
+
+        if new_course != old_course:
+            table.delete_item(Key={"course": old_course, "uuid": uuid})
+
+        return {"statusCode": 200,
+                "headers": cors_headers,
+                "body": json.dumps({
+                    "message": "Updated successfully!",
+                    "question": updated_item
+                })
+        }
 
     except Exception as e:
         logger.error("Error: %s", str(e), exc_info=True)
