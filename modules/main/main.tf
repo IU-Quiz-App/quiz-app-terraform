@@ -20,6 +20,7 @@ module "api_gateway" {
   get_questions_function_invoke_arn   = module.lambda.get_questions_function_invoke_arn
   post_question_function_invoke_arn   = module.lambda.post_question_function_invoke_arn
   delete_question_function_invoke_arn = module.lambda.delete_question_function_invoke_arn
+  put_question_function_invoke_arn    = module.lambda.put_question_function_invoke_arn
 }
 
 module "lambda" {

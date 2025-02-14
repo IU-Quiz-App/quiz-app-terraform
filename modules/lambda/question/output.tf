@@ -17,3 +17,8 @@ output "delete_question_function_invoke_arn" {
   value       = aws_lambda_function.delete_question.invoke_arn
   description = "Invoke ARN of the lambda function for DELETE question"
 }
+
+output "put_question_function_invoke_arn" {
+  value       = aws_lambda_function.put_question.invoke_arn
+  description = "Invoke ARN of the lambda function for PUT question"
+}

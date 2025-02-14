@@ -17,3 +17,8 @@ output "delete_question_function_invoke_arn" {
   value       = module.question.delete_question_function_invoke_arn
   description = "Invoke ARN of the lambda function for DELETE question"
 }
+
+output "put_question_function_invoke_arn" {
+  value       = module.question.put_question_function_invoke_arn
+  description = "Invoke ARN of the lambda function for PUT question"
+}

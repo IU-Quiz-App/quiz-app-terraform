@@ -21,3 +21,9 @@ resource "aws_cloudwatch_log_group" "delete_question" {
   log_group_class   = "STANDARD"
   retention_in_days = 30
 }
+
+resource "aws_cloudwatch_log_group" "put_question" {
+  name              = "/aws/lambda/${var.stage}/question/put-question"
+  log_group_class   = "STANDARD"
+  retention_in_days = 30
+}

@@ -71,7 +71,7 @@ resource "aws_apigatewayv2_integration" "gateway_integration_question_delete" {
   connection_type    = "INTERNET"
   description        = "DELETE endpoint for questions"
   integration_method = "POST"
-  integration_uri    = var.post_question_function_invoke_arn
+  integration_uri    = var.delete_question_function_invoke_arn
   response_parameters {
     status_code = 403
     mappings = {
@@ -84,4 +84,27 @@ resource "aws_apigatewayv2_route" "delete_question_route" {
   api_id    = aws_apigatewayv2_api.api_gateway.id
   route_key = "DELETE /question/{uuid}"
   target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_question_delete.id}"
+}
+
+
+#put-question
+resource "aws_apigatewayv2_integration" "gateway_integration_question_put" {
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  integration_type   = "AWS_PROXY"
+  connection_type    = "INTERNET"
+  description        = "PUT endpoint for questions"
+  integration_method = "POST"
+  integration_uri    = var.put_question_function_invoke_arn
+  response_parameters {
+    status_code = 403
+    mappings = {
+      "append:header.auth" = "$context.authorizer.authorizerResponse"
+    }
+  }
+}
+
+resource "aws_apigatewayv2_route" "put_question_route" {
+  api_id    = aws_apigatewayv2_api.api_gateway.id
+  route_key = "PUT /question/{uuid}"
+  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_question_put.id}"
 }

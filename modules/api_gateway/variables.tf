@@ -38,3 +38,8 @@ variable "delete_question_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for DELETE question"
   type        = string
 }
+
+variable "put_question_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for PUT question"
+  type        = string
+}
