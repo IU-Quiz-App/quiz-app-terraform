@@ -2,7 +2,7 @@ resource "aws_apigatewayv2_api" "api_gateway" {
   name          = "iu-quiz-api-gateway-${var.stage}"
   protocol_type = "HTTP"
   cors_configuration {
-    allow_origins = ["https://dev.iu-quiz.de"]
+    allow_origins = ["https://dev.iu-quiz.de", "https://www.dev.iu-quiz.de"]
     allow_methods = ["OPTIONS", "HEAD"]
     allow_headers = ["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key", "X-Amz-Security-Token"]
   }
