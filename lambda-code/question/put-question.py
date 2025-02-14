@@ -35,7 +35,10 @@ def lambda_handler(event, context):
 
         table.update_item(
             Key={"uuid": uuid},
-            UpdateExpression="SET course = :course, text = :text, answers = :answers, public = :public, status = :status",
+            UpdateExpression="SET course = :course, #text = :text, answers = :answers, public = :public, status = :status",
+            ExpressionAttributeNames={
+                "#text": "text"
+            },
             ExpressionAttributeValues={
                 ":course": body["course"], ":text": body["text"], ":answers": body["answers"],
                 ":public": str(body.get("public", False)).lower(), ":status": body.get("status", "created")
