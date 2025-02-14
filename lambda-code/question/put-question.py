@@ -33,10 +33,8 @@ def lambda_handler(event, context):
         if not response.get("Items"):
             raise ValueError(f"No question found for UUID: {uuid}")
 
-        question_id = response["Items"][0]["id"]
-
         table.update_item(
-            Key={"uuid": question_id},
+            Key={"uuid": uuid},
             UpdateExpression="SET course = :course, text = :text, answers = :answers, public = :public, status = :status",
             ExpressionAttributeValues={
                 ":course": body["course"], ":text": body["text"], ":answers": body["answers"],
