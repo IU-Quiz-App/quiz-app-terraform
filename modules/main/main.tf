@@ -25,6 +25,7 @@ module "api_gateway" {
 module "lambda" {
   source                    = "../lambda"
   stage                     = var.stage
+  domain                    = var.domain
   api_gateway_execution_arn = module.api_gateway.api_gateway_execution_arn
 }
 

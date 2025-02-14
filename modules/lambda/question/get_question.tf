@@ -23,7 +23,8 @@ resource "aws_lambda_function" "get_question" {
 
   environment {
     variables = {
-      STAGE = var.stage
+      STAGE = var.stage,
+      DOMAIN = var.domain,
     }
   }
   #TODO:

@@ -7,12 +7,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 stage = os.environ.get('STAGE')
+domain = os.environ.get('DOMAIN')
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(f"iu-quiz-questions-{stage}")
 
 def lambda_handler(event, context):
     cors_headers = {
-        "Access-Control-Allow-Origin": "https://dev.iu-quiz.de",
+        "Access-Control-Allow-Origin": "https://" + domain,
         "Access-Control-Allow-Methods": "GET, OPTIONS, HEAD",
         "Access-Control-Allow-Headers": "*",
         "Access-Control-Allow-Credentials": "true"
