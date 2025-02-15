@@ -23,19 +23,33 @@ def lambda_handler(event, context):
         logger.info("Event: %s", event)
 
         user_id = event["queryStringParameters"].get("user_id")
+        page = int(event["queryStringParameters"].get("page", 1))
+        page_size = int(event["queryStringParameters"].get("page_size", 10))
 
-        response = table.query(
-                IndexName="user_questions_index",
-                KeyConditionExpression="#created_by = :user_id",
-                ExpressionAttributeNames={
-                    "#created_by": "created_by"
-                },
-                ExpressionAttributeValues={
-                    ":user_id": user_id
-                }
-            )
-        
-        
+        query_params = {
+            "IndexName": "user_questions_index",
+            "KeyConditionExpression": "#created_by = :user_id",
+            "ExpressionAttributeNames": {
+                "#created_by": "created_by"
+            },
+            "ExpressionAttributeValues": {
+                ":user_id": user_id
+            },
+            "Limit": page_size
+        }
+
+        # Calculate the ExclusiveStartKey based on the page number
+        if page > 1:
+            start_key = None
+            for _ in range(page - 1):
+                response = table.query(**query_params)
+                start_key = response.get("LastEvaluatedKey")
+                if not start_key:
+                    break
+                query_params["ExclusiveStartKey"] = start_key
+
+        response = table.query(**query_params)
+
         logger.info("Got questions: %s", response)
 
         items = response.get("Items")
@@ -45,9 +59,11 @@ def lambda_handler(event, context):
         return {
             "statusCode": 200,
             "headers": cors_headers,
-            "body": json.dumps(items)
+            "body": json.dumps({
+                "items": items,
+            })
         }
-    
+
     except Exception as e:
         logger.error("Error getting the questions: %s", str(e), exc_info=True)
         return {
