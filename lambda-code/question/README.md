@@ -1,5 +1,6 @@
 # Object definition of a question
 
+```json
 {
     "uuid": "uuid12345",
     "course": "TestKurs",
@@ -35,3 +36,4 @@
         }
     ]
 }
+```
