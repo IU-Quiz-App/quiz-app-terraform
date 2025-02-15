@@ -5,6 +5,7 @@ resource "aws_apigatewayv2_api" "api_gateway" {
     allow_origins = ["https://${var.domain}", "https://www.${var.domain}"]
     allow_methods = ["OPTIONS", "HEAD"]
     allow_headers = ["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key", "X-Amz-Security-Token"]
+    allow_credentials = true
   }
 }
 
