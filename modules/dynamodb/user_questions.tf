@@ -34,15 +34,31 @@ resource "aws_dynamodb_table" "user_questions" {
     type = "S"
   }
 
-  attribute {
-    name = "given_answer"
-    type = "S"
-  }
-
   global_secondary_index {
     name            = "UserSessionQuestionsIndex"
     hash_key        = "game_session_uuid"
     range_key       = "user_uuid"
+    projection_type = "ALL"
+  }
+
+    global_secondary_index {
+        name            = "QuestionUserIndex"
+        hash_key        = "question_uuid"
+        range_key       = "user_uuid"
+        projection_type = "ALL"
+    }
+
+    global_secondary_index {
+        name            = "UnansweredQuestionsIndex"
+        hash_key        = "user_uuid"
+        range_key       = "answered_at"
+        projection_type = "ALL"
+    }
+
+  global_secondary_index {
+    name            = "RequestedQuestionsIndex"
+    hash_key        = "user_uuid"
+    range_key       = "requested_at"
     projection_type = "ALL"
   }
 }
