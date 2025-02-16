@@ -25,21 +25,6 @@ resource "aws_dynamodb_table" "user_questions" {
   }
 
   attribute {
-    name = "course"
-    type = "S"
-  }
-
-  attribute {
-    name = "text"
-    type = "S"
-  }
-
-  attribute {
-     name = "answers"
-     type = "L"
-  }
-
-  attribute {
     name = "requested_at"
     type = "S"
   }
