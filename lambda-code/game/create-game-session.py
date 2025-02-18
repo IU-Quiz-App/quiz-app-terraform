@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         session_uuid = str(uuid.uuid4())
 
         item = {
-            "session_id": session_uuid,
+            "uuid": session_uuid,
             "created_by": created_by,
             "created_at": datetime.datetime.now().isoformat()
         }
