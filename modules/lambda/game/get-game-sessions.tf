@@ -37,6 +37,5 @@ resource "aws_lambda_permission" "api_gw_trigger_get_game_sessions_permission" {
   function_name = aws_lambda_function.get_game_sessions.function_name
   principal     = "apigateway.amazonaws.com"
 
-  #TODO: try -> source_arn = "${var.api_gateway_execution_arn}/game/DELETE"
   source_arn = "${var.api_gateway_execution_arn}/*/*"
 }
