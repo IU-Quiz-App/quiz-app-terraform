@@ -32,7 +32,6 @@
     }
   ],
   "course": "TestKurs",
-  "game_session": "uuidGameSession123",	
   "created_at": "2025-02-09T16:32:49.145446",
   "created_by": "23479lsdfkjPhilipp",
   "started_at": "2025-02-09T16:32:49.145446",

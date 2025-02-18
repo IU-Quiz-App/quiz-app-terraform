@@ -43,3 +43,23 @@ variable "put_question_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for PUT question"
   type        = string
 }
+
+variable "get_game_session_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for GET game session"
+  type        = string
+}
+
+variable "get_game_sessions_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for GET list of game sessions"
+  type        = string
+}
+
+variable "create_game_session_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for POST game session"
+  type        = string
+}
+
+variable "start_game_session_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for PUT game session"
+  type        = string
+}

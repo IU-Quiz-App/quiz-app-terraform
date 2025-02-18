@@ -22,3 +22,23 @@ output "put_question_function_invoke_arn" {
   value       = module.question.put_question_function_invoke_arn
   description = "Invoke ARN of the lambda function for PUT question"
 }
+
+output "get_game_session_function_invoke_arn" {
+  value       = module.game.get_game_session_function_invoke_arn
+  description = "Invoke ARN of the lambda function for GET game session"
+}
+
+output "get_game_sessions_function_invoke_arn" {
+  value       = module.game.get_game_sessions_function_invoke_arn
+  description = "Invoke ARN of the lambda function for GET list of game sessions"
+}
+
+output "create_game_session_function_invoke_arn" {
+    value       = module.game.create_game_session_function_invoke_arn
+    description = "Invoke ARN of the lambda function for POST game session"
+}
+
+output "start_game_session_function_invoke_arn" {
+    value       = module.game.start_game_session_function_invoke_arn
+    description = "Invoke ARN of the lambda function for PUT game session"
+}
