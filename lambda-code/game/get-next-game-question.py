@@ -39,7 +39,6 @@ def lambda_handler(event, context):
 
         logger.info("Current question index: %s", current_question_index)
 
-        # Convert current_question_index to integer
         current_question_index = int(current_question_index)
 
         next_question_index = current_question_index + 1
