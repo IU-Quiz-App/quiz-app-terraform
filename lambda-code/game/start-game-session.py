@@ -14,6 +14,7 @@ domain = os.environ.get('DOMAIN')
 dynamodb = boto3.resource("dynamodb")
 session_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
 question_table = dynamodb.Table(f"iu-quiz-questions-{stage}")
+game_answers_table = dynamodb.Table(f"iu-quiz-game-answers-{stage}")
 
 def lambda_handler(event, context):
     cors_headers = {
@@ -26,11 +27,11 @@ def lambda_handler(event, context):
     try:
         body = json.loads(event["body"])
 
-        uuid = body.get("uuid")
+        session_uuid = body.get("uuid")
         course_name = body.get("course_name")
         quiz_length = body.get("quiz_length")
 
-        if not uuid:
+        if not session_uuid:
             return {"statusCode": 400, "body": json.dumps({"error": "uuid is required"})}
         if not course_name:
             return {"statusCode": 400, "body": json.dumps({"error": "course_name is required"})}
@@ -38,7 +39,7 @@ def lambda_handler(event, context):
             return {"statusCode": 400, "body": json.dumps({"error": "quiz_length is required"})}
         
         first_question = session_table.get_item(
-            Key = {"uuid": uuid},
+            Key = {"uuid": session_uuid},
             ProjectionExpression = "questions[0]"
         )
         
@@ -64,15 +65,44 @@ def lambda_handler(event, context):
 
         # Update the session with the questions and course name
         session_table.update_item(
-            Key = {"uuid": uuid},
+            Key = {"uuid": session_uuid},
             UpdateExpression = "SET questions = :questions, course_name = :course_name, started_at = :started_at, current_question = :current_question",
             ExpressionAttributeValues = {":questions": questions_for_quiz, ":course_name": course_name, ":started_at": started_at, ":current_question": current_question}
         )
 
+        game_session = session_table.query(
+            IndexName="uuid_index",
+            KeyConditionExpression="#uuid = :question_uuid",
+            ExpressionAttributeNames={
+                "#uuid": "uuid"
+            },
+            ExpressionAttributeValues={
+                ":question_uuid": session_uuid
+            }
+        )
+        logger.info("Got session: %s", game_session)
+
+        users = game_session.get("Items")[0].get("users")
+        logger.info("Users: %s", users)
+
+        for question in questions_for_quiz:
+            for user in users:
+                item = {
+                    "uuid": str(uuid.uuid4()),
+                    "game_session_uuid": session_uuid,
+                    "question_uuid": question["uuid"],
+                    "user_uuid": user,
+                    "answer": "",
+                    "is_correct": "",
+                    "timed_out": ""
+                }
+                logger.info("Item: %s", item)
+                game_answers_table.put_item(Item=item)
+
         return {
             "statusCode": 200,
             "headers": cors_headers,
-            "body": json.dumps({"message": "Game started!", "session_uuid": uuid})
+            "body": json.dumps({"message": "Game started!", "session_uuid": session_uuid})
         }
 
     except Exception as e:

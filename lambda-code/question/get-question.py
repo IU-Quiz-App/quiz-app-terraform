@@ -27,15 +27,15 @@ def lambda_handler(event, context):
         logger.info("Getting question with uuid: %s", uuid)
 
         response = table.query(
-                IndexName="uuid_index",
-                KeyConditionExpression="#uuid = :question_uuid",
-                ExpressionAttributeNames={
-                    "#uuid": "uuid"
-                },
-                ExpressionAttributeValues={
-                    ":question_uuid": uuid
-                }
-            )
+            IndexName="uuid_index",
+            KeyConditionExpression="#uuid = :question_uuid",
+            ExpressionAttributeNames={
+                "#uuid": "uuid"
+            },
+            ExpressionAttributeValues={
+                ":question_uuid": uuid
+            }
+        )
         
         logger.info("Got question: %s", response)
 

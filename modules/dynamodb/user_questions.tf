@@ -1,8 +1,8 @@
 resource "aws_dynamodb_table" "user_questions" {
-  name           = "iu-quiz-user-questions-${var.stage}"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "game_session_uuid"
-  range_key      = "uuid"
+  name         = "iu-quiz-user-questions-${var.stage}"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "game_session_uuid"
+  range_key    = "uuid"
 
   attribute {
     name = "uuid"
@@ -41,19 +41,19 @@ resource "aws_dynamodb_table" "user_questions" {
     projection_type = "ALL"
   }
 
-    global_secondary_index {
-        name            = "QuestionUserIndex"
-        hash_key        = "question_uuid"
-        range_key       = "user_uuid"
-        projection_type = "ALL"
-    }
+  global_secondary_index {
+    name            = "QuestionUserIndex"
+    hash_key        = "question_uuid"
+    range_key       = "user_uuid"
+    projection_type = "ALL"
+  }
 
-    global_secondary_index {
-        name            = "UnansweredQuestionsIndex"
-        hash_key        = "user_uuid"
-        range_key       = "answered_at"
-        projection_type = "ALL"
-    }
+  global_secondary_index {
+    name            = "UnansweredQuestionsIndex"
+    hash_key        = "user_uuid"
+    range_key       = "answered_at"
+    projection_type = "ALL"
+  }
 
   global_secondary_index {
     name            = "RequestedQuestionsIndex"

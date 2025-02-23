@@ -4,7 +4,6 @@ import uuid
 import datetime
 import logging
 import os
-import random
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -34,7 +33,8 @@ def lambda_handler(event, context):
         item = {
             "uuid": session_uuid,
             "created_by": created_by,
-            "created_at": datetime.datetime.now().isoformat()
+            "created_at": datetime.datetime.now().isoformat(),
+            "users": ["Philipp", "Jannis", "Janna"]
         }
 
 

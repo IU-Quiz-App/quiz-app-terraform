@@ -41,4 +41,11 @@ resource "aws_dynamodb_table" "game_sessions" {
     range_key       = "created_at"
     projection_type = "ALL"
   }
+
+  # GSI for getting a session by its uuid
+  global_secondary_index {
+    name            = "uuid_index"
+    hash_key        = "uuid"
+    projection_type = "ALL"
+  }
 }
