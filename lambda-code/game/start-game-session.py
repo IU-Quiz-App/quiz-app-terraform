@@ -67,7 +67,7 @@ def lambda_handler(event, context):
         session_table.update_item(
             Key = {"uuid": session_uuid},
             UpdateExpression = "SET questions = :questions, course_name = :course_name, started_at = :started_at, current_question = :current_question",
-            ExpressionAttributeValues = {":questions": questions_for_quiz, ":course_name": course_name, ":started_at": started_at, ":current_question": current_question}
+            ExpressionAttributeValues = {":questions": questions_for_quiz, ":course_name": course_name, ":started_at": started_at, ":current_question": 0}
         )
 
         game_session = session_table.query(

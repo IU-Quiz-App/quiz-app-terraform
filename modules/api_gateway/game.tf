@@ -126,6 +126,6 @@ resource "aws_apigatewayv2_integration" "gateway_integration_get_next_game_quest
 
 resource "aws_apigatewayv2_route" "gateway_integration_get_next_game_question" {
   api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "GET /game/next-question"
+  route_key = "GET /game/next-question/{uuid}"
   target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_get_next_game_question.id}"
 }
