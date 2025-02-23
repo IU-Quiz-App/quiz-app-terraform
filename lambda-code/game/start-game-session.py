@@ -26,19 +26,19 @@ def lambda_handler(event, context):
     try:
         body = json.loads(event["body"])
 
-        session_uuid = body.get("session_uuid")
+        uuid = body.get("uuid")
         course_name = body.get("course_name")
         quiz_length = body.get("quiz_length")
 
-        if not session_uuid:
-            return {"statusCode": 400, "body": json.dumps({"error": "session_uuid is required"})}
+        if not uuid:
+            return {"statusCode": 400, "body": json.dumps({"error": "uuid is required"})}
         if not course_name:
             return {"statusCode": 400, "body": json.dumps({"error": "course_name is required"})}
         if not quiz_length:
             return {"statusCode": 400, "body": json.dumps({"error": "quiz_length is required"})}
         
         first_question = session_table.get_item(
-            Key = {"uuid": session_uuid},
+            Key = {"uuid": uuid},
             ProjectionExpression = "questions[0]"
         )
         
@@ -64,7 +64,7 @@ def lambda_handler(event, context):
 
         # Update the session with the questions and course name
         session_table.update_item(
-            Key = {"uuid": session_uuid},
+            Key = {"uuid": uuid},
             UpdateExpression = "SET questions = :questions, course_name = :course_name, started_at = :started_at, current_question = :current_question",
             ExpressionAttributeValues = {":questions": questions_for_quiz, ":course_name": course_name, ":started_at": started_at, ":current_question": current_question}
         )
@@ -72,7 +72,7 @@ def lambda_handler(event, context):
         return {
             "statusCode": 200,
             "headers": cors_headers,
-            "body": json.dumps({"message": "Game started!", "session_uuid": session_uuid})
+            "body": json.dumps({"message": "Game started!", "session_uuid": uuid})
         }
 
     except Exception as e:
