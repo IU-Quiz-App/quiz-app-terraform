@@ -21,3 +21,15 @@ resource "aws_cloudwatch_log_group" "start_game_session" {
   log_group_class   = "STANDARD"
   retention_in_days = 30
 }
+
+resource "aws_cloudwatch_log_group" "answer_question" {
+  name              = "/aws/lambda/${var.stage}/game/answer-question"
+  log_group_class   = "STANDARD"
+  retention_in_days = 30
+}
+
+resource "aws_cloudwatch_log_group" "get_next_game_question" {
+  name              = "/aws/lambda/${var.stage}/game/get-next-game-question"
+  log_group_class   = "STANDARD"
+  retention_in_days = 30
+}

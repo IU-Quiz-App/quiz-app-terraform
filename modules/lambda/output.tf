@@ -34,11 +34,21 @@ output "get_game_sessions_function_invoke_arn" {
 }
 
 output "create_game_session_function_invoke_arn" {
-    value       = module.game.create_game_session_function_invoke_arn
-    description = "Invoke ARN of the lambda function for POST game session"
+  value       = module.game.create_game_session_function_invoke_arn
+  description = "Invoke ARN of the lambda function for POST game session"
 }
 
 output "start_game_session_function_invoke_arn" {
-    value       = module.game.start_game_session_function_invoke_arn
-    description = "Invoke ARN of the lambda function for PUT game session"
+  value       = module.game.start_game_session_function_invoke_arn
+  description = "Invoke ARN of the lambda function for PUT game session"
+}
+
+output "answer_question_function_invoke_arn" {
+  value       = module.game.answer_question_function_invoke_arn
+  description = "Invoke ARN of the lambda function for POST answer question"
+}
+
+output "get_next_game_question_function_invoke_arn" {
+  value       = module.game.get_next_game_question_function_invoke_arn
+  description = "Invoke ARN of the lambda function for GET next game question"
 }

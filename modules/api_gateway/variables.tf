@@ -26,7 +26,6 @@ variable "get_question_function_invoke_arn" {
 variable "get_questions_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for GET list of questions"
   type        = string
-
 }
 
 variable "post_question_function_invoke_arn" {
@@ -61,5 +60,15 @@ variable "create_game_session_function_invoke_arn" {
 
 variable "start_game_session_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for PUT game session"
+  type        = string
+}
+
+variable "answer_question_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for POST answer question"
+  type        = string
+}
+
+variable "get_next_game_question_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for GET next game question"
   type        = string
 }
