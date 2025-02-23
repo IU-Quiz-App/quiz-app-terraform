@@ -45,18 +45,20 @@ module "cloudwatch" {
 }
 
 module "route53" {
-  source                 = "../route53"
-  domain                 = var.domain
-  hosted_zone_name       = var.hosted_zone_name
-  gateway_domain_name    = module.api_gateway.gateway_domain_name
-  gateway_hosted_zone_id = module.api_gateway.gateway_hosted_zone_id
-  cloudfront_domain_name = module.cloudfront.cloudfront_domain_name
-  cloudfront_zone_id     = module.cloudfront.cloudfront_zone_id
+  source                           = "../route53"
+  domain                           = var.domain
+  hosted_zone_name                 = var.hosted_zone_name
+  gateway_domain_name              = module.api_gateway.gateway_domain_name
+  gateway_hosted_zone_id           = module.api_gateway.gateway_hosted_zone_id
+  websocket_gateway_domain_name    = module.api_gateway.websocket_gateway_domain_name
+  websocket_gateway_hosted_zone_id = module.api_gateway.websocket_gateway_hosted_zone_id
+  cloudfront_domain_name           = module.cloudfront.cloudfront_domain_name
+  cloudfront_zone_id               = module.cloudfront.cloudfront_zone_id
 }
 
 module "cloudfront" {
-  source                  = "../cloudfront"
-  stage                   = var.stage
+  source                                  = "../cloudfront"
+  stage                                   = var.stage
   s3_frontend_bucket_regional_domain_name = module.s3.s3_frontend_bucket_regional_domain_name
   #  s3_frontend_bucket_website_endpoint     = module.s3.s3_frontend_bucket_website_endpoint
   domain                  = var.domain

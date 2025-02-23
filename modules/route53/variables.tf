@@ -9,12 +9,22 @@ variable "hosted_zone_name" {
 }
 
 variable "gateway_domain_name" {
-  description = "Domain name of the API Gateway"
+  description = "Domain name of the Backend API Gateway"
   type        = string
 }
 
 variable "gateway_hosted_zone_id" {
-  description = "Zone ID of the API Gateway"
+  description = "Zone ID of the Backend API Gateway"
+  type        = string
+}
+
+variable "websocket_gateway_domain_name" {
+  description = "Domain name of the Websocket API Gateway"
+  type        = string
+}
+
+variable "websocket_gateway_hosted_zone_id" {
+  description = "Zone ID of the Websocket API Gateway"
   type        = string
 }
 

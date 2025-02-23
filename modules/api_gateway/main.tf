@@ -50,3 +50,33 @@ resource "aws_apigatewayv2_api_mapping" "api_mapping" {
   domain_name = aws_apigatewayv2_domain_name.domain_name.domain_name
   stage       = var.stage
 }
+
+#Websocket API
+resource "aws_apigatewayv2_api" "websocket_api_gateway" {
+  name                       = "iu-quiz-websocket-api-${var.stage}"
+  protocol_type              = "WEBSOCKET"
+  route_selection_expression = "$request.body.action"
+}
+
+resource "aws_apigatewayv2_stage" "websocket_api_stage" {
+  api_id = aws_apigatewayv2_api.websocket_api_gateway.id
+
+  name        = var.stage
+  auto_deploy = true
+}
+
+resource "aws_apigatewayv2_domain_name" "websocket_domain_name" {
+  domain_name = "ws.${var.domain}"
+
+  domain_name_configuration {
+    certificate_arn = var.certificate_arn
+    endpoint_type   = "REGIONAL"
+    security_policy = "TLS_1_2"
+  }
+}
+
+resource "aws_apigatewayv2_api_mapping" "websocket_api_mapping" {
+  api_id      = aws_apigatewayv2_api.websocket_api_gateway.id
+  domain_name = aws_apigatewayv2_domain_name.websocket_domain_name.domain_name
+  stage       = var.stage
+}

@@ -13,7 +13,8 @@ module "acm" {
 
   subject_alternative_names = [
     "api.${var.domain}",
-    "www.${var.domain}"
+    "www.${var.domain}",
+    "ws.${var.domain}"
   ]
 
   wait_for_validation = true

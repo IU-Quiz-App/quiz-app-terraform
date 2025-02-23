@@ -14,6 +14,18 @@ resource "aws_route53_record" "backend" {
   }
 }
 
+resource "aws_route53_record" "websocket" {
+  name    = "ws.${var.domain}"
+  type    = "A"
+  zone_id = data.aws_route53_zone.zone.id
+
+  alias {
+    name                   = var.websocket_gateway_domain_name
+    zone_id                = var.websocket_gateway_hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
 resource "aws_route53_record" "frontend" {
   name    = var.domain
   type    = "A"
