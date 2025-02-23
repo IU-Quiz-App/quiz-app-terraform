@@ -10,15 +10,14 @@ stage = os.environ.get('STAGE')
 domain = os.environ.get('DOMAIN')
 table = boto3.resource("dynamodb").Table(f"iu-quiz-questions-{stage}")
 
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": f"https://{domain}",
+    "Access-Control-Allow-Methods": "PUT, OPTIONS, HEAD",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Credentials": "true"
+}
 
 def lambda_handler(event, context):
-    cors_headers = {
-        "Access-Control-Allow-Origin": f"https://{domain}",
-        "Access-Control-Allow-Methods": "PUT, OPTIONS, HEAD",
-        "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Credentials": "true"
-    }
-
     try:
         body = json.loads(event["body"])
         uuid = event["pathParameters"]["uuid"]
@@ -54,7 +53,7 @@ def lambda_handler(event, context):
             table.delete_item(Key={"course": old_course, "uuid": uuid})
 
         return {"statusCode": 200,
-                "headers": cors_headers,
+                "headers": CORS_HEADERS,
                 "body": json.dumps({
                     "message": "Updated successfully!",
                     "question": updated_item
@@ -63,4 +62,4 @@ def lambda_handler(event, context):
 
     except Exception as e:
         logger.error("Error: %s", str(e), exc_info=True)
-        return {"statusCode": 500, "headers": cors_headers, "body": json.dumps({"error": str(e)})}
+        return {"statusCode": 500, "headers": CORS_HEADERS, "body": json.dumps({"error": str(e)})}

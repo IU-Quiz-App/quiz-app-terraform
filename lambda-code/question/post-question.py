@@ -13,15 +13,14 @@ domain = os.environ.get('DOMAIN')
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(f"iu-quiz-questions-{stage}")
 
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": f"https://{domain}",
+    "Access-Control-Allow-Methods": "POST, OPTIONS, HEAD",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Credentials": "true"
+}
+
 def lambda_handler(event, context):
-    cors_headers = {
-            "Access-Control-Allow-Origin": "https://" + domain,
-            "Access-Control-Allow-Methods": "POST, OPTIONS, HEAD",
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Credentials": "true"
-        }
-
-
     try:
         body = json.loads(event["body"])
 
@@ -46,7 +45,7 @@ def lambda_handler(event, context):
         
         return {
             "statusCode": 200,
-            "headers": cors_headers,
+            "headers": CORS_HEADERS,
             "body": json.dumps({"message": "Frage erfolgreich gespeichert!", "question": item})
         }
     
@@ -54,6 +53,6 @@ def lambda_handler(event, context):
         logger.error("Error saving the question: %s", str(e), exc_info=True)
         return {
             "statusCode": 500,
-            "headers": cors_headers,
+            "headers": CORS_HEADERS,
             "body": json.dumps({"error": str(e)})
         }

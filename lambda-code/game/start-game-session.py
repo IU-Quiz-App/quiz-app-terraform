@@ -16,14 +16,14 @@ session_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
 question_table = dynamodb.Table(f"iu-quiz-questions-{stage}")
 game_answers_table = dynamodb.Table(f"iu-quiz-game-answers-{stage}")
 
-def lambda_handler(event, context):
-    cors_headers = {
-        "Access-Control-Allow-Origin": "https://" + domain,
-        "Access-Control-Allow-Methods": "POST, OPTIONS, HEAD",
-        "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Credentials": "true"
-    }
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": f"https://{domain}",
+    "Access-Control-Allow-Methods": "POST, OPTIONS, HEAD",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Credentials": "true"
+}
 
+def lambda_handler(event, context):
     try:
         body = json.loads(event["body"])
 
@@ -94,14 +94,15 @@ def lambda_handler(event, context):
                     "user_uuid": user,
                     "answer": "",
                     "is_correct": "",
-                    "timed_out": ""
+                    "timed_out": "",
+                    "user_question": f"{user}#{question['uuid']}"
                 }
                 logger.info("Item: %s", item)
                 game_answers_table.put_item(Item=item)
 
         return {
             "statusCode": 200,
-            "headers": cors_headers,
+            "headers": CORS_HEADERS,
             "body": json.dumps({"message": "Game started!", "session_uuid": session_uuid})
         }
 
@@ -109,7 +110,7 @@ def lambda_handler(event, context):
         logger.error("Error saving the question: %s", str(e), exc_info=True)
         return {
             "statusCode": 500,
-            "headers": cors_headers,
+            "headers": CORS_HEADERS,
             "body": json.dumps({"error": str(e)})
         }
     
