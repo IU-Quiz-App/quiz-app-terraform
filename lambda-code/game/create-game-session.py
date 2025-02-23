@@ -34,6 +34,7 @@ def lambda_handler(event, context):
             "created_at": datetime.datetime.now().isoformat()
         }
 
+
         table.put_item(Item=item)
 
         return {
