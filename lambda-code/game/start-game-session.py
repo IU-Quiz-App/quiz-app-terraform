@@ -91,13 +91,22 @@ def lambda_handler(event, context):
 
         for question in questions_for_quiz:
             for user in users:
+                answers = question["answers"]
+
+                correct_answer = None
+
+                for answer in answers:
+                    if answer['isTrue']:
+                        correct_answer = answer['uuid']
+                        break
+
                 item = {
                     "uuid": str(uuid.uuid4()),
                     "game_session_uuid": session_uuid,
                     "question_uuid": question["uuid"],
                     "user_uuid": user,
                     "answer": "",
-                    "is_correct": "",
+                    "correct_answer": correct_answer,
                     "timed_out": "",
                     "user_question": f"{user}#{question['uuid']}"
                 }

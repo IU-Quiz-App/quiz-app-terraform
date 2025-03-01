@@ -62,10 +62,15 @@ def lambda_handler(event, context):
             ExpressionAttributeValues = {":answer": answer, ":answered_at": answered_at}
         )
 
+        correct_answer = user_answer_uuid_items[0]["correct_answer"]
+
         return {
             "statusCode": 200,
             "headers": CORS_HEADERS,
-            "body": json.dumps({"message": "Answer successfully saved!"})
+            "body": json.dumps({
+                "message": "Answer successfully saved!",
+                "correct_answer": correct_answer
+            })
         }
 
     except Exception as e:
