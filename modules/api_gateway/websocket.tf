@@ -57,6 +57,6 @@ resource "aws_apigatewayv2_integration" "websocket_gateway_integration_update_we
 
 resource "aws_apigatewayv2_route" "update_websocket_information_route" {
   api_id    = aws_apigatewayv2_api.websocket_api_gateway.id
-  route_key = "/update-websocket-information"
+  route_key = "update-websocket-information"
   target    = "integrations/${aws_apigatewayv2_integration.websocket_gateway_integration_update_websocket_information.id}"
 }

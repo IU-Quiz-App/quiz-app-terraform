@@ -7,7 +7,7 @@ data "archive_file" "lambda_update_websocket_information_zip" {
 resource "aws_lambda_function" "update_websocket_information" {
   function_name    = "update_websocket_information_${var.stage}"
   description      = "Answer a question of the game"
-  handler          = "update_websocket_information.lambda_handler"
+  handler          = "update-websocket-information.lambda_handler"
   runtime          = "python3.13"
   architectures    = ["x86_64"]
   role             = var.lambda_execution_role_arn
