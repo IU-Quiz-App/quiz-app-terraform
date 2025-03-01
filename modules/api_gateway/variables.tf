@@ -13,11 +13,6 @@ variable "stage" {
   type        = string
 }
 
-variable "api_gateway_cw_log_group_arn" {
-  description = "ARN of the CloudWatch LogGroup for the API Gateway"
-  type        = string
-}
-
 variable "get_question_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for GET question"
   type        = string
@@ -70,5 +65,20 @@ variable "answer_question_function_invoke_arn" {
 
 variable "get_next_game_question_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for GET next game question"
+  type        = string
+}
+
+variable "websocket_connect_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for websocket connect"
+  type        = string
+}
+
+variable "websocket_disconnect_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for websocket disconnect"
+  type        = string
+}
+
+variable "update_websocket_information_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for updating websocket information"
   type        = string
 }

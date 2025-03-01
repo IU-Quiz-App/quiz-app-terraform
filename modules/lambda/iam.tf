@@ -51,11 +51,20 @@ data "aws_iam_policy_document" "lambda_access_dynamodb" {
     effect = "Allow"
     sid    = "AllowAccessToDynamoDB"
     actions = [
-      "dynamodb:GetItem",
+      "dynamodb:BatchGetItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:ConditionCheckItem",
       "dynamodb:PutItem",
-      "dynamodb:UpdateItem",
+      "dynamodb:DescribeTable",
       "dynamodb:DeleteItem",
-      "dynamodb:Query"
+      "dynamodb:GetItem",
+      "dynamodb:Scan",
+      "dynamodb:Query",
+      "dynamodb:UpdateItem",
+      "dynamodb:DescribeStream",
+      "dynamodb:GetRecords",
+      "dynamodb:GetShardIterator",
+      "dynamodb:ListStreams"
     ]
     #TODO: Stärker einschränken
     resources = ["*"]
@@ -72,4 +81,23 @@ resource "aws_iam_policy" "lambda_dynamodb_access_policy" {
 resource "aws_iam_role_policy_attachment" "lambda_dynamodb_access" {
   role       = aws_iam_role.lambda_execution_role.name
   policy_arn = aws_iam_policy.lambda_dynamodb_access_policy.arn
+}
+
+data "aws_iam_policy_document" "manage-connections" {
+  statement {
+    effect    = "Allow"
+    sid       = "AllowManageConnections"
+    actions   = ["execute-api:ManageConnections"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "manage-connections-policy" {
+  name   = "manage_websocket_connections_${var.stage}"
+  policy = data.aws_iam_policy_document.manage-connections.json
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_manage_connections" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.manage-connections-policy.arn
 }
