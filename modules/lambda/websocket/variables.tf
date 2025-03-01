@@ -8,12 +8,12 @@ variable "domain" {
   type        = string
 }
 
-variable "api_gateway_execution_arn" {
-  description = "ARN of the API Gateway"
+variable "lambda_execution_role_arn" {
+  description = "ARN of the lambda execution role"
   type        = string
 }
 
-variable "websocket_api_gateway_execution_arn" {
+variable "api_gateway_execution_arn" {
   description = "ARN of the Websocket API Gateway"
   type        = string
 }

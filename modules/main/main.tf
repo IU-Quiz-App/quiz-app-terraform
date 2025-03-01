@@ -15,7 +15,6 @@ module "api_gateway" {
   stage                                      = var.stage
   domain                                     = var.domain
   certificate_arn                            = module.acm.certificate_arn
-  api_gateway_cw_log_group_arn               = module.cloudwatch.api_gateway_cw_log_group_arn
   get_question_function_invoke_arn           = module.lambda.get_question_function_invoke_arn
   get_questions_function_invoke_arn          = module.lambda.get_questions_function_invoke_arn
   post_question_function_invoke_arn          = module.lambda.post_question_function_invoke_arn
@@ -27,22 +26,20 @@ module "api_gateway" {
   start_game_session_function_invoke_arn     = module.lambda.start_game_session_function_invoke_arn
   answer_question_function_invoke_arn        = module.lambda.answer_question_function_invoke_arn
   get_next_game_question_function_invoke_arn = module.lambda.get_next_game_question_function_invoke_arn
+  websocket_connect_function_invoke_arn      = module.lambda.websocket_connect_function_invoke_arn
+  websocket_disconnect_function_invoke_arn   = module.lambda.websocket_disconnect_function_invoke_arn
 }
 
 module "lambda" {
-  source                    = "../lambda"
-  stage                     = var.stage
-  domain                    = var.domain
-  api_gateway_execution_arn = module.api_gateway.api_gateway_execution_arn
+  source                              = "../lambda"
+  stage                               = var.stage
+  domain                              = var.domain
+  api_gateway_execution_arn           = module.api_gateway.api_gateway_execution_arn
+  websocket_api_gateway_execution_arn = module.api_gateway.websocket_api_gateway_execution_arn
 }
 
 module "dynamodb" {
   source = "../dynamodb"
-  stage  = var.stage
-}
-
-module "cloudwatch" {
-  source = "../cloudwatch"
   stage  = var.stage
 }
 
@@ -62,8 +59,7 @@ module "cloudfront" {
   source                                  = "../cloudfront"
   stage                                   = var.stage
   s3_frontend_bucket_regional_domain_name = module.s3.s3_frontend_bucket_regional_domain_name
-  #  s3_frontend_bucket_website_endpoint     = module.s3.s3_frontend_bucket_website_endpoint
-  domain                  = var.domain
-  us_east_certificate_arn = module.acm.certificate_us-east_arn
-  log_bucket_id           = module.s3.log_bucket_id
+  domain                                  = var.domain
+  us_east_certificate_arn                 = module.acm.certificate_us-east_arn
+  log_bucket_id                           = module.s3.log_bucket_id
 }

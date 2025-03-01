@@ -17,7 +17,7 @@ resource "aws_apigatewayv2_stage" "api_gateway_stage" {
   #  default_route_settings {}
   #This displays the logs in cloudwatch
   access_log_settings {
-    destination_arn = var.api_gateway_cw_log_group_arn
+    destination_arn = aws_cloudwatch_log_group.api_gw.arn
 
     format = jsonencode({
       requestId               = "$context.requestId"
@@ -59,10 +59,51 @@ resource "aws_apigatewayv2_api" "websocket_api_gateway" {
 }
 
 resource "aws_apigatewayv2_stage" "websocket_api_stage" {
-  api_id = aws_apigatewayv2_api.websocket_api_gateway.id
+  depends_on = [aws_api_gateway_account.websocket_api_gateway_account]
+  api_id     = aws_apigatewayv2_api.websocket_api_gateway.id
 
   name        = var.stage
   auto_deploy = true
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.websocket_api_gw.arn
+
+    format = jsonencode({
+      requestId               = "$context.requestId"
+      sourceIp                = "$context.identity.sourceIp"
+      requestTime             = "$context.requestTime"
+      resourcePath            = "$context.resourcePath"
+      routeKey                = "$context.routeKey"
+      status                  = "$context.status"
+      responseLength          = "$context.responseLength"
+      integrationErrorMessage = "$context.integrationErrorMessage"
+      errorMessage            = "$context.errorMessage"
+      lambdaExecutionError    = "$context.lambdaExecutionError"
+      requestBody             = "$context.requestBody"
+      }
+    )
+  }
+
+  route_settings {
+    route_key                = "$connect"
+    detailed_metrics_enabled = true
+    logging_level            = "INFO"
+    throttling_rate_limit    = 1000
+    throttling_burst_limit   = 500
+  }
+  route_settings {
+    route_key                = "$disconnect"
+    detailed_metrics_enabled = true
+    logging_level            = "INFO"
+    throttling_rate_limit    = 1000
+    throttling_burst_limit   = 500
+  }
+  route_settings {
+    route_key                = "$default"
+    detailed_metrics_enabled = true
+    logging_level            = "INFO"
+    throttling_rate_limit    = 1000
+    throttling_burst_limit   = 500
+  }
 }
 
 resource "aws_apigatewayv2_domain_name" "websocket_domain_name" {
@@ -79,4 +120,56 @@ resource "aws_apigatewayv2_api_mapping" "websocket_api_mapping" {
   api_id      = aws_apigatewayv2_api.websocket_api_gateway.id
   domain_name = aws_apigatewayv2_domain_name.websocket_domain_name.domain_name
   stage       = var.stage
+}
+
+resource "aws_api_gateway_account" "websocket_api_gateway_account" {
+  cloudwatch_role_arn = aws_iam_role.api_gateway_logs_role.arn
+}
+
+# Roles and Policies for logging
+resource "aws_iam_role" "api_gateway_logs_role" {
+  name = "api-gateway-logs-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = ["apigateway.amazonaws.com", "lambda.amazonaws.com"]
+        }
+      },
+    ]
+  })
+}
+
+resource "aws_iam_policy" "api_gateway_logs_policy" {
+  name        = "api-gateway-logs-policy"
+  description = "Policy to allow API Gateway to write to CloudWatch Logs"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams",
+          "logs:PutLogEvents",
+          "logs:GetLogEvents",
+          "logs:FilterLogEvents"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy_attachment" "api_gateway_logs_policy_attachment" {
+  name       = "api-gateway-logs-policy-attachment"
+  policy_arn = aws_iam_policy.api_gateway_logs_policy.arn
+  roles      = [aws_iam_role.api_gateway_logs_role.name]
 }

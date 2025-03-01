@@ -52,3 +52,13 @@ output "get_next_game_question_function_invoke_arn" {
   value       = module.game.get_next_game_question_function_invoke_arn
   description = "Invoke ARN of the lambda function for GET next game question"
 }
+
+output "websocket_connect_function_invoke_arn" {
+  value       = module.websocket.websocket_connect_function_invoke_arn
+  description = "Invoke ARN of the lambda function for websocket connect"
+}
+
+output "websocket_disconnect_function_invoke_arn" {
+  value       = module.websocket.websocket_disconnect_function_invoke_arn
+  description = "Invoke ARN of the lambda function for websocket disconnect"
+}
