@@ -10,7 +10,8 @@ logger = logging.getLogger()
 stage = os.environ.get('STAGE')
 domain = os.environ.get('DOMAIN')
 dynamodb = boto3.resource("dynamodb")
-table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
+game_session_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
+game_answers_table = dynamodb.Table(f"iu-quiz-game-answers-{stage}")
 
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": f"https://{domain}",
@@ -18,12 +19,6 @@ CORS_HEADERS = {
     "Access-Control-Allow-Headers": "*",
     "Access-Control-Allow-Credentials": "true"
 }
-
-# Function to convert Decimal to float/int
-def decimal_converter(obj):
-    if isinstance(obj, Decimal):
-        return float(obj) if obj % 1 != 0 else int(obj)
-    raise TypeError
 
 def lambda_handler(event, context):
     try:
@@ -33,13 +28,24 @@ def lambda_handler(event, context):
 
         logger.info("Getting session with uuid: %s", uuid)
 
-        response = table.get_item(
+        response = game_session_table.get_item(
             Key={"uuid": uuid}
         )
 
         item = response.get('Item')
 
         logger.info("Got item: %s", item)
+
+        if item.get("ended_at") or True:
+            users = item.get("users")
+            users_answers = []
+            for user in users:
+                answers = get_users_answers(uuid, user)
+                users_answers.append({
+                    "user": user,
+                    "answers": answers
+                })
+
 
         return {
             "statusCode": 200,
@@ -54,3 +60,30 @@ def lambda_handler(event, context):
             "headers": CORS_HEADERS,
             "body": json.dumps({"error": str(e)})
         }
+
+
+# Function to convert Decimal to float/int
+def decimal_converter(obj):
+    if isinstance(obj, Decimal):
+        return float(obj) if obj % 1 != 0 else int(obj)
+    raise TypeError
+
+def get_users_answers(game_session_uuid, user_uuid):
+    logger.info("Getting answers for user: %s in game session: %s", user_uuid, game_session_uuid)
+
+    response = game_answers_table.query(
+        IndexName="user_answers_index",
+        KeyConditionExpression="#game_session_uuid = :game_session_uuid AND #user_uuid = :user_uuid",
+        ExpressionAttributeNames={
+            "#game_session_uuid": "game_session_uuid",
+            "#user_uuid": "user_uuid"
+        },
+        ExpressionAttributeValues={
+            ":game_session_uuid": game_session_uuid,
+            ":user_uuid": "user_uuid"
+        }
+    )
+
+    logger.info(response)
+
+    return response.get("Items", [])
