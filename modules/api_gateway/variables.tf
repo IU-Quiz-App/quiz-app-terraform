@@ -77,3 +77,8 @@ variable "websocket_disconnect_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for websocket disconnect"
   type        = string
 }
+
+variable "update_websocket_information_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for updating websocket information"
+  type        = string
+}

@@ -62,3 +62,8 @@ output "websocket_disconnect_function_invoke_arn" {
   value       = module.websocket.websocket_disconnect_function_invoke_arn
   description = "Invoke ARN of the lambda function for websocket disconnect"
 }
+
+output "update_websocket_information_function_invoke_arn" {
+  value       = module.websocket.update_websocket_information_function_invoke_arn
+  description = "Invoke ARN of the lambda function for updating websocket information"
+}
