@@ -32,7 +32,7 @@ def lambda_handler(event, context):
         DYNAMODB_CLIENT.put_item(
             TableName=CONNECTION_TABLE_NAME,
             Item={
-                'connectionId': {'S': connection_id},
+                'connection_uuid': {'S': connection_id},
                 'connectionEndpoint': {'S': connection_endpoint},
                 'start_time': {'S': created_at}
             })

@@ -7,16 +7,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 stage = os.environ.get('STAGE')
-domain = os.environ.get('DOMAIN')
+#domain = os.environ.get('DOMAIN')
 dynamodb = boto3.resource("dynamodb")
 websocket_connections_table = dynamodb.Table(f"websocket-connections-{stage}")
 
-CORS_HEADERS = {
-    "Access-Control-Allow-Origin": f"https://{domain}",
-    "Access-Control-Allow-Methods": "POST, OPTIONS, HEAD",
-    "Access-Control-Allow-Headers": "*",
-    "Access-Control-Allow-Credentials": "true"
-}
+#CORS_HEADERS = {
+#    "Access-Control-Allow-Origin": f"https://{domain}",
+#    "Access-Control-Allow-Methods": "POST, OPTIONS, HEAD",
+#    "Access-Control-Allow-Headers": "*",
+#    "Access-Control-Allow-Credentials": "true"
+#}
 
 def lambda_handler(event, context):
     try:
@@ -33,8 +33,10 @@ def lambda_handler(event, context):
         if not user_uuid:
             return {"statusCode": 400, "body": json.dumps({"error": "user_uuid is required"})}
         
+        logger.info(f"Updating websocket connection {websocket_connection_uuid} with game session {game_session_uuid} and user uuid {user_uuid}")
+        
         websocket_connections_table.update_item(
-            Key = {"uuid": websocket_connection_uuid},
+            Key = {"connection_uuid": websocket_connection_uuid},
             UpdateExpression = "SET game_session_uuid = :game_session_uuid, user_uuid = :user_uuid",
             ExpressionAttributeValues = {":game_session_uuid": game_session_uuid, ":user_uuid": user_uuid}
         )
@@ -43,7 +45,7 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
-            "headers": CORS_HEADERS,
+#            "headers": CORS_HEADERS,
             "body": json.dumps({"message": "Answer successfully saved!"})
         }
 
@@ -51,6 +53,6 @@ def lambda_handler(event, context):
         logger.error("Error saving the answer: %s", str(e), exc_info=True)
         return {
             "statusCode": 500,
-            "headers": CORS_HEADERS,
+#            "headers": CORS_HEADERS,
             "body": json.dumps({"error": str(e)})
         }

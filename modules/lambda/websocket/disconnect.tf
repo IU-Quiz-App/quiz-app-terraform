@@ -37,5 +37,5 @@ resource "aws_lambda_permission" "websocket_api_gw_trigger_disconnect_permission
   function_name = aws_lambda_function.websocket_disconnect.function_name
   principal     = "apigateway.amazonaws.com"
 
-  source_arn = "${var.api_gateway_execution_arn}/*/*"
+  source_arn = "${var.websocket_api_gateway_execution_arn}/*/*"
 }

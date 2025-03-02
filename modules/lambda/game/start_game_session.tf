@@ -23,7 +23,7 @@ resource "aws_lambda_function" "start_game_session" {
 
   environment {
     variables = {
-      STAGE = var.stage,
+      STAGE  = var.stage,
       DOMAIN = var.domain,
     }
   }

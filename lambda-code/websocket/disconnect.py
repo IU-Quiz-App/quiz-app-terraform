@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     try:
         DYNAMODB_CLIENT.delete_item(
             TableName=CONNECTION_TABLE_NAME,
-            Key={'connectionId': {'S': connection_id}}
+            Key={'connection_uuid': {'S': connection_id}}
         )
         logger.info("Successfully deleted connection from connections table")
         return {'statusCode': 200, 'body': 'Disconnected'}

@@ -87,7 +87,7 @@ data "aws_iam_policy_document" "manage-connections" {
   statement {
     effect    = "Allow"
     sid       = "AllowManageConnections"
-    actions   = ["execute-api:ManageConnections"]
+    actions   = ["execute-api:*"]
     resources = ["*"]
   }
 }

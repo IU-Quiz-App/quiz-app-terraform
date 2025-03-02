@@ -13,7 +13,7 @@ variable "lambda_execution_role_arn" {
   type        = string
 }
 
-variable "api_gateway_execution_arn" {
+variable "websocket_api_gateway_execution_arn" {
   description = "ARN of the Websocket API Gateway"
   type        = string
 }

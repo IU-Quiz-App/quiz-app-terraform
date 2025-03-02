@@ -37,6 +37,7 @@ module "lambda" {
   domain                              = var.domain
   api_gateway_execution_arn           = module.api_gateway.api_gateway_execution_arn
   websocket_api_gateway_execution_arn = module.api_gateway.websocket_api_gateway_execution_arn
+  websocket_api_gateway_endpoint      = module.api_gateway.websocket_api_gateway_endpoint
 }
 
 module "dynamodb" {
@@ -50,8 +51,8 @@ module "route53" {
   hosted_zone_name                 = var.hosted_zone_name
   gateway_domain_name              = module.api_gateway.gateway_domain_name
   gateway_hosted_zone_id           = module.api_gateway.gateway_hosted_zone_id
-  websocket_gateway_domain_name    = module.api_gateway.websocket_gateway_domain_name
-  websocket_gateway_hosted_zone_id = module.api_gateway.websocket_gateway_hosted_zone_id
+  websocket_gateway_domain_name    = module.api_gateway.websocket_api_gateway_domain_name
+  websocket_gateway_hosted_zone_id = module.api_gateway.websocket_api_gateway_hosted_zone_id
   cloudfront_domain_name           = module.cloudfront.cloudfront_domain_name
   cloudfront_zone_id               = module.cloudfront.cloudfront_zone_id
 }
