@@ -46,6 +46,8 @@ def lambda_handler(event, context):
                     "answers": answers
                 })
 
+            item["users_answers"] = users_answers
+
 
         return {
             "statusCode": 200,
@@ -76,11 +78,11 @@ def get_users_answers(game_session_uuid, user_uuid):
         KeyConditionExpression="#game_session_uuid = :game_session_uuid AND #user_uuid = :user_uuid",
         ExpressionAttributeNames={
             "#game_session_uuid": "game_session_uuid",
-            "#user_uuid": "user_uuid"
+            "#user_uuid": "user_uuid",
         },
         ExpressionAttributeValues={
             ":game_session_uuid": game_session_uuid,
-            ":user_uuid": "user_uuid"
+            ":user_uuid": user_uuid,
         }
     )
 
