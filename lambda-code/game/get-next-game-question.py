@@ -47,14 +47,14 @@ def lambda_handler(event, context):
 
         logger.info("Next question index: %s", next_question_index)
 
-        if next_question_index == len(game_session_item["Item"]["questions"]):
+        if current_question_index == len(game_session_item["Item"]["questions"]):
             return {
                 "statusCode": 200,
                 "headers": CORS_HEADERS,
                 "body": json.dumps({"info": "End of game"})
             }
 
-        next_question = game_session_item["Item"]["questions"][next_question_index]
+        next_question = game_session_item["Item"]["questions"][current_question_index]
 
         answers = next_question["answers"]
 
