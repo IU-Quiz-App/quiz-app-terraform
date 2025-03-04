@@ -37,15 +37,7 @@ def lambda_handler(event, context):
         logger.info("Got item: %s", item)
 
         if item.get("ended_at") or True:
-            users = item.get("users")
-            users_answers = []
-            for user in users:
-                answers = get_users_answers(uuid, user)
-                users_answers.append({
-                    "user": user,
-                    "answers": answers
-                })
-
+            users_answers = get_all_answers_of_session(uuid)
             item["users_answers"] = users_answers
 
 
@@ -70,22 +62,18 @@ def decimal_converter(obj):
         return float(obj) if obj % 1 != 0 else int(obj)
     raise TypeError
 
-def get_users_answers(game_session_uuid, user_uuid):
-    logger.info("Getting answers for user: %s in game session: %s", user_uuid, game_session_uuid)
-
-    response = game_answers_table.query(
-        IndexName="user_answers_index",
-        KeyConditionExpression="#game_session_uuid = :game_session_uuid AND #user_uuid = :user_uuid",
-        ExpressionAttributeNames={
-            "#game_session_uuid": "game_session_uuid",
-            "#user_uuid": "user_uuid",
-        },
-        ExpressionAttributeValues={
-            ":game_session_uuid": game_session_uuid,
-            ":user_uuid": user_uuid,
-        }
-    )
-
-    logger.info(response)
-
-    return response.get("Items", [])
+def get_all_answers_of_session(game_session_uuid):
+    try:
+        response = game_answers_table.query(
+            KeyConditionExpression="#game_session_uuid = :game_session_uuid",
+            ExpressionAttributeNames={
+                "#game_session_uuid": "game_session_uuid"
+            },
+            ExpressionAttributeValues={
+                ":game_session_uuid": game_session_uuid
+            }
+        )
+        return response.get("Items", [])
+    except Exception as e:
+        logger.error("Error retrieving answers: %s", str(e))
+        return []
