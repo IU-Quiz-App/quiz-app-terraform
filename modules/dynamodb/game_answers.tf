@@ -18,6 +18,11 @@ resource "aws_dynamodb_table" "game_answers" {
   }
 
   attribute {
+    name = "question_uuid"
+    type = "S"
+  }
+
+  attribute {
     name = "user_question"
     type = "S"
   }
@@ -38,6 +43,14 @@ resource "aws_dynamodb_table" "game_answers" {
     name            = "game_session_user_question_index"
     hash_key        = "game_session_uuid"
     range_key       = "user_question"
+    projection_type = "ALL"
+  }
+
+  # GSI for getting all answers of a specific question from a game session
+  global_secondary_index {
+    name            = "game_session_question_index"
+    hash_key        = "game_session_uuid"
+    range_key       = "question_uuid"
     projection_type = "ALL"
   }
 }
