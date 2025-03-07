@@ -72,4 +72,5 @@ module "step_function" {
   start_game_session_function_arn     = module.lambda.start_game_session_function_arn
   send_next_question_function_arn     = module.lambda.send_next_question_function_arn
   check_complete_answers_function_arn = module.lambda.check_complete_answers_function_arn
+  check_last_question_function_arn    = module.lambda.check_last_question_function_arn
 }

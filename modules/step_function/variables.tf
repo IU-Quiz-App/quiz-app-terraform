@@ -17,3 +17,8 @@ variable "check_complete_answers_function_arn" {
   description = "ARN of the lambda function to check if all players have answered"
   type        = string
 }
+
+variable "check_last_question_function_arn" {
+  description = "ARN of the lambda function to check if the last question has been answered"
+  type        = string
+}

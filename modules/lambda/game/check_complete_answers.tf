@@ -30,14 +30,3 @@ resource "aws_lambda_function" "check_complete_answers" {
   #TODO:
   #dead_letter_config {}
 }
-
-#TODO: Change permission to allow Step Functions to invoke this Lambda function
-
-resource "aws_lambda_permission" "api_gw_trigger_check_complete_answers_permission" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.check_complete_answers.function_name
-  principal     = "apigateway.amazonaws.com"
-
-  source_arn = "${var.api_gateway_execution_arn}/*/*"
-}

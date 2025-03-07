@@ -39,3 +39,9 @@ resource "aws_cloudwatch_log_group" "check_complete_answers" {
   log_group_class   = "STANDARD"
   retention_in_days = 30
 }
+
+resource "aws_cloudwatch_log_group" "check_last_question" {
+  name              = "/aws/lambda/${var.stage}/game/check-last-question"
+  log_group_class   = "STANDARD"
+  retention_in_days = 30
+}
