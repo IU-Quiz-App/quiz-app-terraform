@@ -35,7 +35,8 @@ def lambda_handler(event, context):
 
         next_question = get_next_question(game_session_uuid, game_session_item)
         send_next_question_to_all_players(game_session_uuid, next_question)
-        return response(200, {"message": "Broadcast sent"})
+        new_question_index = int(game_session_item.get("current_question", 0))
+        return response(200, {"message": "Next question sent to all players", "question_index": new_question_index})
     
     except Exception as e:
         logger.error(f"Error: {str(e)}")
@@ -45,8 +46,8 @@ def get_game_session(game_session_uuid):
     response = game_sessions_table.get_item(Key={"uuid": game_session_uuid})
     return response.get("Item")
 
-def get_next_question(game_session_uuid, game_session):
-    current_question_index = int(game_session.get("current_question", 0))
+def get_next_question(game_session_uuid, game_session_item):
+    current_question_index = int(game_session_item.get("current_question", 0))
     next_question_index = current_question_index + 1
 
     logger.info(f"Updating game session {game_session_uuid} to question index {next_question_index}")
@@ -57,7 +58,7 @@ def get_next_question(game_session_uuid, game_session):
         ExpressionAttributeValues={":next_question_index": next_question_index}
     )
 
-    next_question = game_session["questions"][next_question_index]
+    next_question = game_session_item["questions"][next_question_index]
 
     # Randomize answers
     answers = next_question["answers"]

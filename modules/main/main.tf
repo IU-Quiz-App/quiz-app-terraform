@@ -65,3 +65,10 @@ module "cloudfront" {
   us_east_certificate_arn                 = module.acm.certificate_us-east_arn
   log_bucket_id                           = module.s3.log_bucket_id
 }
+
+module "step_function" {
+  source                                 = "../step_function"
+  stage                                  = var.stage
+  start_game_session_function_invoke_arn = module.lambda.start_game_session_function_invoke_arn
+  send_next_question_function_invoke_arn = module.lambda.get_next_game_question_function_invoke_arn
+}
