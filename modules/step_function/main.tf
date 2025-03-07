@@ -12,7 +12,7 @@ resource "aws_sfn_state_machine" "quiz_game_state_machine" {
       "Resource": "arn:aws:states:::lambda:invoke",
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
-        "FunctionName": "arn:aws:lambda:eu-central-1:739275480216:function:start_game_session_dev:$LATEST",
+        "FunctionName": "${var.start_game_session_function_arn}",
         "Payload": "{% $states.input %}"
       },
       "Next": "Send next question"
@@ -22,7 +22,7 @@ resource "aws_sfn_state_machine" "quiz_game_state_machine" {
       "Resource": "arn:aws:states:::lambda:invoke",
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
-        "FunctionName": "arn:aws:lambda:eu-central-1:739275480216:function:send_next_question_dev:$LATEST",
+        "FunctionName": "${var.send_next_question_function_arn}",
         "Payload": "{% $states.input %}"
       },
       "Next": "Parallel"
@@ -52,7 +52,7 @@ resource "aws_sfn_state_machine" "quiz_game_state_machine" {
               "Resource": "arn:aws:states:::lambda:invoke",
               "Output": "{% $states.result.Payload %}",
               "Arguments": {
-                "FunctionName": "arn:aws:lambda:eu-central-1:739275480216:function:check_complete_answers_dev:$LATEST",
+                "FunctionName": "${var.check_complete_answers_function_arn}",
                 "Payload": "{% $states.input %}"
               },
               "Next": "All players answered"
@@ -63,9 +63,12 @@ resource "aws_sfn_state_machine" "quiz_game_state_machine" {
                 {
                   "Condition": "{% $allPlayersAnswered %}",
                   "Next": "Pass"
+                },
+                {
+                  "Condition": "{% $not($allPlayersAnswered) %}",
+                  "Next": "Set unanswered questions to false"
                 }
-              ],
-              "Default": "Set unanswered questions to false"
+              ]
             },
             "Pass": {
               "Type": "Pass",
@@ -100,11 +103,14 @@ resource "aws_sfn_state_machine" "quiz_game_state_machine" {
       "Type": "Choice",
       "Choices": [
         {
-          "Condition": "{% $lastQuestionReached %}",
+          "Condition": "{% $not($lastQuestionReached) %}",
           "Next": "Send next question"
+        },
+        {
+          "Condition": "{% $lastQuestionReached %}",
+          "Next": "Send result to players"          
         }
-      ],
-      "Default": "Send result to players"
+      ]
     },
     "Send result to players": {
       "Type": "Task",

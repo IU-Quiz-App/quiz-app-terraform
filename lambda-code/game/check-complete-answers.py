@@ -33,9 +33,9 @@ def lambda_handler(event, context):
                 break
         
         if player_answer_missing:
-            return response(200, {"answers_complete": False})
+            return response(200, {"allPlayersAnswered": False})
         else:
-            return response(200, {"answers_complete": True})
+            return response(200, {"allPlayersAnswered": True})
             
     except Exception as e:
         logger.error(f"Error: {str(e)}")
