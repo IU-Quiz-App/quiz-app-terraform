@@ -11,10 +11,14 @@ logger = logging.getLogger()
 
 stage = os.environ.get('STAGE')
 domain = os.environ.get('DOMAIN')
+step_function_arn = os.environ.get('STEP_FUNCTION_ARN')
+
 dynamodb = boto3.resource("dynamodb")
-session_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
+game_session_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
 question_table = dynamodb.Table(f"iu-quiz-questions-{stage}")
 game_answers_table = dynamodb.Table(f"iu-quiz-game-answers-{stage}")
+
+stepfunctions = boto3.client("stepfunctions")
 
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": f"https://{domain}",
@@ -27,19 +31,19 @@ def lambda_handler(event, context):
     try:
         body = json.loads(event["body"])
 
-        session_uuid = body.get("uuid")
+        game_session_uuid = body.get("uuid")
         course_name = body.get("course_name")
         quiz_length = body.get("quiz_length")
 
-        if not session_uuid:
-            return {"statusCode": 400, "body": json.dumps({"error": "uuid is required"})}
+        if not game_session_uuid:
+            return {"statusCode": 400, "body": json.dumps({"error": "uuid of the game session is required"})}
         if not course_name:
             return {"statusCode": 400, "body": json.dumps({"error": "course_name is required"})}
         if not quiz_length:
             return {"statusCode": 400, "body": json.dumps({"error": "quiz_length is required"})}
         
-        first_question = session_table.get_item(
-            Key = {"uuid": session_uuid},
+        first_question = game_session_table.get_item(
+            Key = {"uuid": game_session_uuid},
             ProjectionExpression = "questions[0]"
         )
         
@@ -64,8 +68,8 @@ def lambda_handler(event, context):
         current_question = questions_for_quiz[0]["uuid"]
 
         # Update the session with the questions and course name
-        session_table.update_item(
-            Key = {"uuid": session_uuid},
+        game_session_table.update_item(
+            Key = {"uuid": game_session_uuid},
             UpdateExpression = "SET questions = :questions, course_name = :course_name, started_at = :started_at, current_question = :current_question",
             ExpressionAttributeValues = {
                 ":questions": questions_for_quiz, 
@@ -74,14 +78,14 @@ def lambda_handler(event, context):
                 ":current_question": 0}
         )
 
-        game_session = session_table.query(
+        game_session = game_session_table.query(
             IndexName="uuid_index",
             KeyConditionExpression="#uuid = :question_uuid",
             ExpressionAttributeNames={
                 "#uuid": "uuid"
             },
             ExpressionAttributeValues={
-                ":question_uuid": session_uuid
+                ":question_uuid": game_session_uuid
             }
         )
         logger.info("Got session: %s", game_session)
@@ -102,7 +106,7 @@ def lambda_handler(event, context):
 
                 item = {
                     "uuid": str(uuid.uuid4()),
-                    "game_session_uuid": session_uuid,
+                    "game_session_uuid": game_session_uuid,
                     "question_uuid": question["uuid"],
                     "user_uuid": user,
                     "answer": "",
@@ -113,10 +117,21 @@ def lambda_handler(event, context):
                 logger.info("Item: %s", item)
                 game_answers_table.put_item(Item=item)
 
+        response = stepfunctions.start_execution(
+            stateMachineArn=step_function_arn,
+            input=json.dumps({
+                "session_uuid": game_session_uuid,
+                "course_name": course_name,
+                "users": users
+            })
+        )
+
+        logger.info(f"Step function started: {response}")
+
         return {
             "statusCode": 200,
             "headers": CORS_HEADERS,
-            "body": json.dumps({"message": "Game started!", "session_uuid": session_uuid})
+            "body": json.dumps({"message": "Game started!", "session_uuid": game_session_uuid})
         }
 
     except Exception as e:

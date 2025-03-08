@@ -38,6 +38,7 @@ module "lambda" {
   api_gateway_execution_arn           = module.api_gateway.api_gateway_execution_arn
   websocket_api_gateway_execution_arn = module.api_gateway.websocket_api_gateway_execution_arn
   websocket_api_gateway_endpoint      = module.api_gateway.websocket_api_gateway_endpoint
+  game_step_function_arn              = module.step_function.game_step_function_arn
 }
 
 module "dynamodb" {
@@ -67,9 +68,9 @@ module "cloudfront" {
 }
 
 module "step_function" {
-  source                                      = "../step_function"
-  stage                                       = var.stage
-  start_game_session_function_arn             = module.lambda.start_game_session_function_arn
+  source = "../step_function"
+  stage  = var.stage
+  #start_game_session_function_arn             = module.lambda.start_game_session_function_arn
   send_next_question_function_arn             = module.lambda.send_next_question_function_arn
   check_complete_answers_function_arn         = module.lambda.check_complete_answers_function_arn
   check_last_question_function_arn            = module.lambda.check_last_question_function_arn

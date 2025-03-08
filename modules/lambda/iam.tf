@@ -25,11 +25,9 @@ data "aws_iam_policy_document" "lambda_logging" {
     effect = "Allow"
     sid    = "AllowAccessToCloudWatchLogs"
     actions = [
-      #      "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
     ]
-    #TODO: Stärker einschränken
     resources = ["arn:aws:logs:*:*:*"]
   }
 }
@@ -66,7 +64,6 @@ data "aws_iam_policy_document" "lambda_access_dynamodb" {
       "dynamodb:GetShardIterator",
       "dynamodb:ListStreams"
     ]
-    #TODO: Stärker einschränken
     resources = ["*"]
   }
 }
@@ -100,4 +97,31 @@ resource "aws_iam_policy" "manage-connections-policy" {
 resource "aws_iam_role_policy_attachment" "lambda_manage_connections" {
   role       = aws_iam_role.lambda_execution_role.name
   policy_arn = aws_iam_policy.manage-connections-policy.arn
+}
+
+data "aws_iam_policy_document" "lambda_access_step_function" {
+  statement {
+    effect = "Allow"
+    sid    = "AllowAccessToStepFunctions"
+    actions = [
+      "states:StartExecution",
+      "states:DescribeExecution",
+      "states:ListExecutions",
+      "states:ListStateMachines",
+      "states:DescribeStateMachine"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_access_step_function_policy" {
+  name        = "access_step_function_${var.stage}"
+  path        = "/"
+  description = "IAM policy for accessing Step Functions from a lambda function"
+  policy      = data.aws_iam_policy_document.lambda_access_step_function.json
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_access_step_function" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.lambda_access_step_function_policy.arn
 }

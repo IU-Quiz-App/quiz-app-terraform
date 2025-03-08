@@ -1,20 +1,21 @@
-resource "aws_sfn_state_machine" "quiz_game_state_machine" {
+resource "aws_sfn_state_machine" "game_state_machine" {
   name     = "QuizGameStateMachine"
   role_arn = aws_iam_role.step_functions_role.arn
 
   definition = <<EOF
 {
   "Comment": "A description of my state machine",
-  "StartAt": "Start game",
+  "StartAt": "Set global variables",
   "States": {
-    "Start game": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::lambda:invoke",
-      "Output": "{% $states.result.Payload %}",
-      "Arguments": {
-        "FunctionName": "${var.start_game_session_function_arn}",
-        "Payload": "{% $states.input %}"
+    "Set global variables": {
+      "Type": "Pass",
+      "Result": {
+        "metadata": {
+          "session_uuid": "{% $.session_uuid %}"
+        },
+        "input_data": "{% $ %}"
       },
+      "ResultPath": "$",
       "Next": "Send next question"
     },
     "Send next question": {
@@ -62,7 +63,7 @@ resource "aws_sfn_state_machine" "quiz_game_state_machine" {
               "Choices": [
                 {
                   "Condition": "{% $allPlayersAnswered %}",
-                  "Next": "Pass"
+                  "Next": "Do nothing"
                 },
                 {
                   "Condition": "{% $not($allPlayersAnswered) %}",
@@ -70,7 +71,7 @@ resource "aws_sfn_state_machine" "quiz_game_state_machine" {
                 }
               ]
             },
-            "Pass": {
+            "Do nothing": {
               "Type": "Pass",
               "End": true
             },

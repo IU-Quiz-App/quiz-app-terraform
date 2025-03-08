@@ -3,10 +3,10 @@ variable "stage" {
   type        = string
 }
 
-variable "start_game_session_function_arn" {
-  description = "ARN of the lambda function for PUT game session"
-  type        = string
-}
+#variable "start_game_session_function_arn" {
+#  description = "ARN of the lambda function for PUT game session"
+#  type        = string
+#}
 
 variable "send_next_question_function_arn" {
   description = "ARN of the lambda function to send the next question to players"
