@@ -43,11 +43,6 @@ output "check_complete_answers_function_arn" {
   description = "ARN of the lambda function to check if all players have answered"
 }
 
-output "check_last_question_function_arn" {
-  value       = aws_lambda_function.check_last_question.arn
-  description = "ARN of the lambda function to check if the last question has been answered"
-}
-
 output "set_unanswered_questions_false_function_arn" {
   value       = aws_lambda_function.set_unanswered_questions_false.arn
   description = "ARN of the lambda function to set unanswered questions to false"

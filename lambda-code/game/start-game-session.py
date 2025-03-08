@@ -121,8 +121,7 @@ def lambda_handler(event, context):
             stateMachineArn=step_function_arn,
             input=json.dumps({
                 "game_session_uuid": game_session_uuid,
-                "course_name": course_name,
-                "users": users
+                "quiz_length": quiz_length,
             })
         )
 

@@ -18,11 +18,6 @@ variable "check_complete_answers_function_arn" {
   type        = string
 }
 
-variable "check_last_question_function_arn" {
-  description = "ARN of the lambda function to check if the last question has been answered"
-  type        = string
-}
-
 variable "send_final_results_function_arn" {
   description = "ARN of the lambda function to send the final results to players"
   type        = string

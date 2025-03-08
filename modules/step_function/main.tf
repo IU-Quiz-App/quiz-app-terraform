@@ -11,7 +11,9 @@ resource "aws_sfn_state_machine" "game_state_machine" {
       "Type": "Pass",
       "Comment": "Set global variables",
       "Assign": {
-        "session_uuid": "{% $states.input.game_session_uuid %}"
+        "session_uuid": "{% $states.input.game_session_uuid %}",
+        "quiz_length": "{% $states.input.quiz_length %}",
+        "current_question_index": "{% 0 %}"
       },
       "Next": "Send next question"
     },
@@ -23,6 +25,9 @@ resource "aws_sfn_state_machine" "game_state_machine" {
       "Arguments": {
         "FunctionName": "${var.send_next_question_function_arn}",
         "Payload": "{% $states.input %}"
+      },
+      "Assign": {
+        "current_question_index": "{% $current_question_index + 1 %}"
       },
       "Next": "Parallel"
     },
@@ -90,28 +95,17 @@ resource "aws_sfn_state_machine" "game_state_machine" {
           }
         }
       ],
-      "Next": "Check if last question is reached"
-    },
-    "Check if last question is reached": {
-      "Type": "Task",
-      "Comment": "Check if the last question of the game is reached",
-      "Resource": "arn:aws:states:::lambda:invoke",
-      "Output": "{% $states.result.Payload %}",
-      "Arguments": {
-        "FunctionName": "${var.check_last_question_function_arn}",
-        "Payload": "{% $states.input %}"
-      },
       "Next": "Last question reached"
     },
     "Last question reached": {
       "Type": "Choice",
       "Choices": [
         {
-          "Condition": "{% $not($lastQuestionReached) %}",
+          "Condition": "{% $current_question_index = $quiz_length %}",
           "Next": "Send next question"
         },
         {
-          "Condition": "{% $lastQuestionReached %}",
+          "Condition": "{% $current_question_index != $quiz_length %}",
           "Next": "Send result to players"          
         }
       ]
