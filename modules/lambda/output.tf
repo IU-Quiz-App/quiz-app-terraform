@@ -73,6 +73,11 @@ output "check_last_question_function_arn" {
   description = "ARN of the lambda function to check if the last question has been answered"
 }
 
+output "set_unanswered_questions_false_function_arn" {
+  value       = module.game.set_unanswered_questions_false_function_arn
+  description = "ARN of the lambda function to set unanswered questions to false"
+}
+
 output "websocket_connect_function_invoke_arn" {
   value       = module.websocket.websocket_connect_function_invoke_arn
   description = "Invoke ARN of the lambda function for websocket connect"
