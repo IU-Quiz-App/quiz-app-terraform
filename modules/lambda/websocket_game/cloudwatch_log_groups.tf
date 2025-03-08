@@ -3,3 +3,9 @@ resource "aws_cloudwatch_log_group" "send_next_question" {
   log_group_class   = "STANDARD"
   retention_in_days = 30
 }
+
+resource "aws_cloudwatch_log_group" "send_final_results" {
+  name              = "/aws/lambda/${var.stage}/game/send-final-results"
+  log_group_class   = "STANDARD"
+  retention_in_days = 30
+}

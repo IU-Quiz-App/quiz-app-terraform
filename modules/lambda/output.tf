@@ -63,6 +63,16 @@ output "get_next_game_question_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for GET next game question"
 }
 
+output "check_complete_answers_function_arn" {
+  value       = module.game.check_complete_answers_function_arn
+  description = "ARN of the lambda function to check if all players have answered"
+}
+
+output "check_last_question_function_arn" {
+  value       = module.game.check_last_question_function_arn
+  description = "ARN of the lambda function to check if the last question has been answered"
+}
+
 output "websocket_connect_function_invoke_arn" {
   value       = module.websocket.websocket_connect_function_invoke_arn
   description = "Invoke ARN of the lambda function for websocket connect"
@@ -83,12 +93,7 @@ output "send_next_question_function_arn" {
   description = "ARN of the lambda function to send the next question to players"
 }
 
-output "check_complete_answers_function_arn" {
-  value       = module.game.check_complete_answers_function_arn
-  description = "ARN of the lambda function to check if all players have answered"
-}
-
-output "check_last_question_function_arn" {
-  value       = module.game.check_last_question_function_arn
-  description = "ARN of the lambda function to check if the last question has been answered"
+output "send_final_results_function_arn" {
+  value       = module.websocket_game.send_final_results_function_arn
+  description = "ARN of the lambda function to send the final results to players"
 }

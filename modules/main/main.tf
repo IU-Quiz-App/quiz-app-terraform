@@ -73,4 +73,5 @@ module "step_function" {
   send_next_question_function_arn     = module.lambda.send_next_question_function_arn
   check_complete_answers_function_arn = module.lambda.check_complete_answers_function_arn
   check_last_question_function_arn    = module.lambda.check_last_question_function_arn
+  send_final_results_function_arn     = module.lambda.send_final_results_function_arn
 }

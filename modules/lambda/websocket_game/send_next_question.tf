@@ -31,14 +31,3 @@ resource "aws_lambda_function" "send_next_question" {
   #TODO:
   #dead_letter_config {}
 }
-
-#TODO: Change permission to allow Step Functions to invoke this Lambda function
-
-resource "aws_lambda_permission" "api_gw_trigger_send_next_question_permission" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.send_next_question.function_name
-  principal     = "apigateway.amazonaws.com"
-
-  source_arn = "${var.websocket_api_gateway_execution_arn}/*/*"
-}

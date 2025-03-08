@@ -117,7 +117,7 @@ resource "aws_sfn_state_machine" "quiz_game_state_machine" {
       "Resource": "arn:aws:states:::lambda:invoke",
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
-        "FunctionName": "arn:aws:lambda:eu-central-1:739275480216:function:get_questions_dev:$LATEST",
+        "FunctionName": "${var.send_final_results_function_arn}",
         "Payload": "{% $states.input %}"
       },
       "End": true
