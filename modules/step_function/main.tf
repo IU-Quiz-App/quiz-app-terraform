@@ -51,35 +51,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
               "Type": "Wait",
               "Comment": "Wait until timeout is reached",
               "Seconds": 60,
-              "Next": "Check if all players answered"
-            },
-            "Check if all players answered": {
-              "Type": "Task",
-              "Comment": "Check if all players answered the question",
-              "Resource": "arn:aws:states:::lambda:invoke",
-              "Output": "{% $states.result.Payload %}",
-              "Arguments": {
-                "FunctionName": "${var.check_complete_answers_function_arn}",
-                "Payload": "{% $states.input %}"
-              },
-              "Next": "All players answered"
-            },
-            "All players answered": {
-              "Type": "Choice",
-              "Choices": [
-                {
-                  "Condition": "{% $allPlayersAnswered %}",
-                  "Next": "Do nothing"
-                },
-                {
-                  "Condition": "{% $not($allPlayersAnswered) %}",
-                  "Next": "Set unanswered questions to false"
-                }
-              ]
-            },
-            "Do nothing": {
-              "Type": "Pass",
-              "End": true
+              "Next": "Set unanswered questions to false"
             },
             "Set unanswered questions to false": {
               "Type": "Task",

@@ -38,11 +38,6 @@ output "get_next_game_question_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for GET next game question"
 }
 
-output "check_complete_answers_function_arn" {
-  value       = aws_lambda_function.check_complete_answers.arn
-  description = "ARN of the lambda function to check if all players have answered"
-}
-
 output "set_unanswered_questions_false_function_arn" {
   value       = aws_lambda_function.set_unanswered_questions_false.arn
   description = "ARN of the lambda function to set unanswered questions to false"

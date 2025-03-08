@@ -34,12 +34,6 @@ resource "aws_cloudwatch_log_group" "get_next_game_question" {
   retention_in_days = 30
 }
 
-resource "aws_cloudwatch_log_group" "check_complete_answers" {
-  name              = "/aws/lambda/${var.stage}/game/check-complete-answers"
-  log_group_class   = "STANDARD"
-  retention_in_days = 30
-}
-
 resource "aws_cloudwatch_log_group" "set_unanswered_questions_false" {
   name              = "/aws/lambda/${var.stage}/game/set-unanswered-questions-false"
   log_group_class   = "STANDARD"
