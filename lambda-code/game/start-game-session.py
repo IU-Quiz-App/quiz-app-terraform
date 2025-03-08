@@ -120,7 +120,7 @@ def lambda_handler(event, context):
         response = stepfunctions.start_execution(
             stateMachineArn=step_function_arn,
             input=json.dumps({
-                "session_uuid": game_session_uuid,
+                "game_session_uuid": game_session_uuid,
                 "course_name": course_name,
                 "users": users
             })

@@ -9,17 +9,15 @@ resource "aws_sfn_state_machine" "game_state_machine" {
   "States": {
     "Set global variables": {
       "Type": "Pass",
-      "Result": {
-        "metadata": {
-          "session_uuid": "{% $.session_uuid %}"
-        },
-        "input_data": "{% $ %}"
+      "Comment": "Set global variables",
+      "Assign": {
+        "session_uuid": "{% $states.input.game_session_uuid %}"
       },
-      "ResultPath": "$",
       "Next": "Send next question"
     },
     "Send next question": {
       "Type": "Task",
+      "Comment": "Send next question to players",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
@@ -36,6 +34,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
           "States": {
             "Replace with StartExecution Child Step Function": {
               "Type": "Pass",
+              "Comment": "Wait for players to answer the question",
               "End": true
             }
           }
@@ -45,11 +44,13 @@ resource "aws_sfn_state_machine" "game_state_machine" {
           "States": {
             "Wait": {
               "Type": "Wait",
+              "Comment": "Wait until timeout is reached",
               "Seconds": 60,
               "Next": "Check if all players answered"
             },
             "Check if all players answered": {
               "Type": "Task",
+              "Comment": "Check if all players answered the question",
               "Resource": "arn:aws:states:::lambda:invoke",
               "Output": "{% $states.result.Payload %}",
               "Arguments": {
@@ -77,6 +78,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
             },
             "Set unanswered questions to false": {
               "Type": "Task",
+              "Comment": "Set questions to false/unanswered that were not answered by players",
               "Resource": "arn:aws:states:::lambda:invoke",
               "Output": "{% $states.result.Payload %}",
               "Arguments": {
@@ -92,6 +94,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
     },
     "Check if last question is reached": {
       "Type": "Task",
+      "Comment": "Check if the last question of the game is reached",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
@@ -115,6 +118,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
     },
     "Send result to players": {
       "Type": "Task",
+      "Comment": "Send final game results to players",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
