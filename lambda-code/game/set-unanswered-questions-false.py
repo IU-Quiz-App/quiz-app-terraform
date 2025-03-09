@@ -14,7 +14,7 @@ def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
 
     game_session_uuid = event.get("game_session_uuid")
-    question_uuid = event.get("question_uuid")
+    question_uuid = event.get("current_question_uuid")
 
     if not game_session_uuid:
         return response(400, {"error": "Missing game_session_uuid"})
@@ -54,4 +54,4 @@ def get_player_answers(game_session_uuid, question_uuid):
     return player_answers
 
 def response(status_code, body):
-    return {"statusCode": status_code, "body": json.dumps(body)}
+    return {"statusCode": status_code, "body": body}

@@ -24,19 +24,28 @@ def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
 
     game_session_uuid = event.get("game_session_uuid")
+    current_question_index = event.get("current_question_index")
 
     if not game_session_uuid:
         return response(400, {"error": "Missing game_session_uuid"})
-
+    if current_question_index is None:
+        return response(400, {"error": "Missing current_question_index"})
+    
     try:    
         game_session_item = get_game_session(game_session_uuid)
         if not game_session_item:
             return response(404, {"error": "Game session not found"})
-
-        next_question = get_next_question(game_session_uuid, game_session_item)
-        send_next_question_to_all_players(game_session_uuid, next_question)
-        new_question_index = int(game_session_item.get("current_question", 0))
-        return response(200, {"message": "Next question sent to all players", "question_index": new_question_index})
+        
+        question = get_question(game_session_item, current_question_index)
+        send_question_to_all_players(game_session_uuid, question)
+        question_uuid = game_session_item["questions"][current_question_index]["uuid"]
+        logger.info(f"Question uuid: {question_uuid}")
+        return response(200, {"message": "Question sent to all players", "current_question_uuid": question_uuid})
+        #return {
+        #    "status_code": 200,
+        #    "message": "Question sent to all players", 
+        #    "current_question_uuid": question_uuid
+        #}
     
     except Exception as e:
         logger.error(f"Error: {str(e)}")
@@ -46,32 +55,34 @@ def get_game_session(game_session_uuid):
     response = game_sessions_table.get_item(Key={"uuid": game_session_uuid})
     return response.get("Item")
 
-def get_next_question(game_session_uuid, game_session_item):
-    current_question_index = int(game_session_item.get("current_question", 0))
-    next_question_index = current_question_index + 1
+#def get_next_question(game_session_uuid, game_session_item):
+#    current_question_index = int(game_session_item.get("current_question", 0))
+#    next_question_index = current_question_index + 1
+#
+#    logger.info(f"Updating game session {game_session_uuid} to question index {next_question_index}")
+#
+#    game_sessions_table.update_item(
+#        Key={"uuid": game_session_uuid},
+#        UpdateExpression="SET current_question = :next_question_index",
+#        ExpressionAttributeValues={":next_question_index": next_question_index}
+#    )
 
-    logger.info(f"Updating game session {game_session_uuid} to question index {next_question_index}")
-
-    game_sessions_table.update_item(
-        Key={"uuid": game_session_uuid},
-        UpdateExpression="SET current_question = :next_question_index",
-        ExpressionAttributeValues={":next_question_index": next_question_index}
-    )
-
-    next_question = game_session_item["questions"][next_question_index]
+#    next_question = game_session_item["questions"][next_question_index]
+def get_question(game_session_item, question_index):
+    question = game_session_item["questions"][question_index]
 
     # Randomize answers
-    answers = next_question["answers"]
+    answers = question["answers"]
     for answer in answers:
         answer["isTrue"] = False
     random.shuffle(answers)
-    next_question["answers"] = answers
+    question["answers"] = answers
 
-    logger.info(f"Next question with shuffled answers: {next_question}")
-    return next_question
+    logger.info(f"Question with shuffled answers: {question}")
+    return question
 
-def send_next_question_to_all_players(game_session_uuid, next_question):
-    logger.info(f"Sending next question to all clients in session: {game_session_uuid}")
+def send_question_to_all_players(game_session_uuid, question):
+    logger.info(f"Sending question to all clients in session: {game_session_uuid}")
     response = websocket_connections_table.scan(
         FilterExpression="game_session_uuid = :session",
         ExpressionAttributeValues={":session": game_session_uuid}
@@ -86,12 +97,12 @@ def send_next_question_to_all_players(game_session_uuid, next_question):
         try:
             apigateway_management.post_to_connection(
                 ConnectionId=connection_id,
-                Data=json.dumps({"next_question": next_question})
+                Data=json.dumps({"question": question})
             )
-            logger.info(f"Sent next_question to {connection_id}")
+            logger.info(f"Sent question to {connection_id}")
 
         except apigateway_management.exceptions.GoneException:
             logger.info(f"Connection {connection_id} is gone")
 
 def response(status_code, body):
-    return {"statusCode": status_code, "body": json.dumps(body)}
+    return {"statusCode": status_code, "body": body}

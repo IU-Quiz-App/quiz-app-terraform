@@ -34,7 +34,7 @@ def lambda_handler(event, context):
         if "Item" not in game_session_item:
             return {"statusCode": 404, "body": json.dumps({"error": "Game session not found"})}
         
-        current_question_index = game_session_item["Item"].get("current_question")
+        current_question_index = int(game_session_item["Item"].get("current_question"))
 
         logger.info("Current question index: %s", current_question_index)
 
