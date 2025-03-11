@@ -23,20 +23,27 @@ def lambda_handler(event, context):
     
     try:
         player_answers = get_player_answers(game_session_uuid, question_uuid)
-        if not player_answers.get("Items"):
+        if not player_answers:
             return response(404, {"error": "No player answers found"})
         
         player_answer_missing = False
-        for player_answer in player_answers["Items"]:
+        for player_answer in player_answers:
             if not player_answer.get("answer"):
                 player_answer_missing = True
-                break
-        
+                game_answers_table.update_item(
+                    Key = {
+                        "game_session_uuid": game_session_uuid,
+                        "uuid": player_answer["uuid"]
+                    },
+                    UpdateExpression = "SET timed_out = :timed_out",
+                    ExpressionAttributeValues = {":timed_out": "true"}
+                )
+                logger.info(f"Question {player_answer["question_uuid"]} of player {player_answer["user_uuid"]} set to false because of timeout")
         if player_answer_missing:
-            return response(200, {"allPlayersAnswered": False})
+            return response(200, {"message": "Unanswered questions set to false"})
         else:
-            return response(200, {"allPlayersAnswered": True})
-            
+            return response(200, {"message": "All answers were complete"})
+                    
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         return response(500, {"error": str(e)})
@@ -50,8 +57,8 @@ def get_player_answers(game_session_uuid, question_uuid):
                 ":question_uuid": question_uuid
             }
         )
-    logger.info(f"Player answers: {player_answers}")
-    return player_answers
+    logger.info(f"Player answers: {player_answers["Items"]}")
+    return player_answers["Items"]
 
 def response(status_code, body):
     return {"statusCode": status_code, "body": body}
