@@ -39,3 +39,9 @@ resource "aws_cloudwatch_log_group" "set_unanswered_questions_false" {
   log_group_class   = "STANDARD"
   retention_in_days = 30
 }
+
+resource "aws_cloudwatch_log_group" "save_task_token" {
+  name              = "/aws/lambda/${var.stage}/game/save-task-token"
+  log_group_class   = "STANDARD"
+  retention_in_days = 30
+}

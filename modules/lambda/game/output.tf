@@ -42,3 +42,8 @@ output "set_unanswered_questions_false_function_arn" {
   value       = aws_lambda_function.set_unanswered_questions_false.arn
   description = "ARN of the lambda function to set unanswered questions to false"
 }
+
+output "save_task_token_function_arn" {
+  value       = aws_lambda_function.save_task_token.arn
+  description = "ARN of the lambda function to save the task token of Wait for player answers state to DynamoDB"
+}

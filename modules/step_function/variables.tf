@@ -17,3 +17,8 @@ variable "set_unanswered_questions_false_function_arn" {
   description = "ARN of the lambda function to set unanswered questions to false"
   type        = string
 }
+
+variable "save_task_token_function_arn" {
+  description = "ARN of the lambda function to save the task token of Wait for player answers state to DynamoDB"
+  type        = string
+}

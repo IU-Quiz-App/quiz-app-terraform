@@ -38,11 +38,14 @@ resource "aws_sfn_state_machine" "game_state_machine" {
     "Wait for player answers": {
       "Type": "Task",
       "Comment": "Wait for players to answer the question",
-      "Resource": "arn:aws:states:::lambda:invoke",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
-        "FunctionName": "${var.send_final_results_function_arn}",
-        "Payload": "{% $states.input %}"
+        "FunctionName": "${var.save_task_token_function_arn}",
+        "Payload": {
+          "game_session_uuid": "{% $game_session_uuid %}",
+          "task_token": "{% $states.context.Task.Token %}"
+        }
       },
       "TimeoutSeconds": 5,
       "Catch": [

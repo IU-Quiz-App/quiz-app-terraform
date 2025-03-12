@@ -92,3 +92,8 @@ output "send_final_results_function_arn" {
   value       = module.websocket_game.send_final_results_function_arn
   description = "ARN of the lambda function to send the final results to players"
 }
+
+output "save_task_token_function_arn" {
+  value       = module.game.save_task_token_function_arn
+  description = "ARN of the lambda function to save the task token of Wait for player answers state to DynamoDB"
+}
