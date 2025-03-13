@@ -68,6 +68,11 @@ output "set_unanswered_questions_false_function_arn" {
   description = "ARN of the lambda function to set unanswered questions to false"
 }
 
+output "save_task_token_function_arn" {
+  value       = module.game.save_task_token_function_arn
+  description = "ARN of the lambda function to save the task token of Wait for player answers state to DynamoDB"
+}
+
 output "websocket_connect_function_invoke_arn" {
   value       = module.websocket.websocket_connect_function_invoke_arn
   description = "Invoke ARN of the lambda function for websocket connect"
@@ -93,7 +98,7 @@ output "send_final_results_function_arn" {
   description = "ARN of the lambda function to send the final results to players"
 }
 
-output "save_task_token_function_arn" {
-  value       = module.game.save_task_token_function_arn
-  description = "ARN of the lambda function to save the task token of Wait for player answers state to DynamoDB"
+output "save_player_answer_function_invoke_arn" {
+  value       = module.websocket_game.save_player_answer_function_invoke_arn
+  description = "Invoke ARN of the lambda function for saving the answer of a player"
 }

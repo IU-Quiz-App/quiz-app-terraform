@@ -82,3 +82,8 @@ variable "update_websocket_information_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for updating websocket information"
   type        = string
 }
+
+variable "save_player_answer_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for saving player answer"
+  type        = string
+}

@@ -29,6 +29,7 @@ module "api_gateway" {
   websocket_connect_function_invoke_arn            = module.lambda.websocket_connect_function_invoke_arn
   websocket_disconnect_function_invoke_arn         = module.lambda.websocket_disconnect_function_invoke_arn
   update_websocket_information_function_invoke_arn = module.lambda.update_websocket_information_function_invoke_arn
+  save_player_answer_function_invoke_arn           = module.lambda.save_player_answer_function_invoke_arn
 }
 
 module "lambda" {

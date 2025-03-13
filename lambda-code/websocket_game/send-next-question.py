@@ -41,11 +41,6 @@ def lambda_handler(event, context):
         question_uuid = game_session_item["questions"][current_question_index]["uuid"]
         logger.info(f"Question uuid: {question_uuid}")
         return response(200, {"message": "Question sent to all players", "current_question_uuid": question_uuid})
-        #return {
-        #    "status_code": 200,
-        #    "message": "Question sent to all players", 
-        #    "current_question_uuid": question_uuid
-        #}
     
     except Exception as e:
         logger.error(f"Error: {str(e)}")
@@ -55,19 +50,6 @@ def get_game_session(game_session_uuid):
     response = game_sessions_table.get_item(Key={"uuid": game_session_uuid})
     return response.get("Item")
 
-#def get_next_question(game_session_uuid, game_session_item):
-#    current_question_index = int(game_session_item.get("current_question", 0))
-#    next_question_index = current_question_index + 1
-#
-#    logger.info(f"Updating game session {game_session_uuid} to question index {next_question_index}")
-#
-#    game_sessions_table.update_item(
-#        Key={"uuid": game_session_uuid},
-#        UpdateExpression="SET current_question = :next_question_index",
-#        ExpressionAttributeValues={":next_question_index": next_question_index}
-#    )
-
-#    next_question = game_session_item["questions"][next_question_index]
 def get_question(game_session_item, question_index):
     question = game_session_item["questions"][question_index]
 
