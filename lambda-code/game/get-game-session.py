@@ -36,7 +36,7 @@ def lambda_handler(event, context):
 
         logger.info("Got item: %s", item)
 
-        if item.get("ended_at") or True:
+        if item.get("ended_at"):
             users_answers = get_all_answers_of_session(uuid)
             item["users_answers"] = users_answers
 

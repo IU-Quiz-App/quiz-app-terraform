@@ -19,6 +19,7 @@ question_table = dynamodb.Table(f"iu-quiz-questions-{stage}")
 game_answers_table = dynamodb.Table(f"iu-quiz-game-answers-{stage}")
 
 stepfunctions = boto3.client("stepfunctions")
+lambda_client = boto3.client("lambda")
 
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": f"https://{domain}",
@@ -41,11 +42,6 @@ def lambda_handler(event, context):
             return {"statusCode": 400, "body": json.dumps({"error": "course_name is required"})}
         if not quiz_length:
             return {"statusCode": 400, "body": json.dumps({"error": "quiz_length is required"})}
-        
-        first_question = game_session_table.get_item(
-            Key = {"uuid": game_session_uuid},
-            ProjectionExpression = "questions[0]"
-        )
         
         try:
             quiz_length = int(quiz_length)
@@ -116,6 +112,14 @@ def lambda_handler(event, context):
                 }
                 logger.info("Item: %s", item)
                 game_answers_table.put_item(Item=item)
+
+        update_game_session_response = lambda_client.invoke(
+            FunctionName=f"send_updated_game_session_{stage}",
+            InvocationType="Event",
+            Payload=json.dumps({"game_session_uuid": game_session_uuid})
+        )
+
+        logger.info(f"Update game session lambda invoked: {update_game_session_response}")
 
         response = stepfunctions.start_execution(
             stateMachineArn=step_function_arn,

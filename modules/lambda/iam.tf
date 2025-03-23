@@ -125,3 +125,26 @@ resource "aws_iam_role_policy_attachment" "lambda_access_step_function" {
   role       = aws_iam_role.lambda_execution_role.name
   policy_arn = aws_iam_policy.lambda_access_step_function_policy.arn
 }
+
+data "aws_iam_policy_document" "lambda_invoke_lambda" {
+  statement {
+    effect = "Allow"
+    sid    = "AllowInvokeLambda"
+    actions = [
+      "lambda:InvokeFunction"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_invoke_lambda_policy" {
+  name        = "invoke_lambda_${var.stage}"
+  path        = "/"
+  description = "IAM policy for invoking other lambda functions"
+  policy      = data.aws_iam_policy_document.lambda_invoke_lambda.json
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_invoke_lambda" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.lambda_invoke_lambda_policy.arn
+}

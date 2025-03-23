@@ -15,3 +15,9 @@ resource "aws_cloudwatch_log_group" "save_player_answer" {
   log_group_class   = "STANDARD"
   retention_in_days = 30
 }
+
+resource "aws_cloudwatch_log_group" "send_updated_game_session" {
+  name              = "/aws/lambda/${var.stage}/websocket/send_updated_game_session"
+  log_group_class   = "STANDARD"
+  retention_in_days = 30
+}
