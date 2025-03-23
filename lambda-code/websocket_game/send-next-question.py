@@ -79,7 +79,10 @@ def send_question_to_all_players(game_session_uuid, question):
         try:
             apigateway_management.post_to_connection(
                 ConnectionId=connection_id,
-                Data=json.dumps({"question": question})
+                Data=json.dumps({
+                    "action": "next-question",
+                    "question": question
+                })
             )
             logger.info(f"Sent question to {connection_id}")
 
