@@ -19,7 +19,7 @@ def lambda_handler(event, context):
     game_session_uuid = body.get("game_session_uuid")
     user_uuid = body.get("user_uuid")
     question_uuid = body.get("question_uuid")
-    answer = body.get("answer")
+    answer_uuid = body.get("answer_uuid")
     answered_at = datetime.datetime.now().isoformat()
 
     if not game_session_uuid:
@@ -28,8 +28,8 @@ def lambda_handler(event, context):
         return response(400, {"error": "Missing user_uuid"})
     if not question_uuid:
         return response(400, {"error": "Missing question_uuid"})
-    if not answer:
-        return response(400, {"error": "Missing answer"})
+    if not answer_uuid:
+        return response(400, {"error": "Missing answer_uuid"})
     
     try:
         player_answers = get_player_answers(game_session_uuid, question_uuid)
@@ -45,7 +45,7 @@ def lambda_handler(event, context):
                         "uuid": player_answer["uuid"]
                     },
                     UpdateExpression = "SET answer = :answer, answered_at = :answered_at",
-                    ExpressionAttributeValues = {":answer": answer, ":answered_at": answered_at}
+                    ExpressionAttributeValues = {":answer": answer_uuid, ":answered_at": answered_at}
                 )
                 logger.info(f"Answer of user {user_uuid} updated successfully")
 
