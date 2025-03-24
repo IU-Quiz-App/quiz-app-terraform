@@ -31,3 +31,12 @@ resource "aws_lambda_function" "save_player_answer" {
   #TODO:
   #dead_letter_config {}
 }
+
+resource "aws_lambda_permission" "api_gw_trigger_save_player_answer_permission" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.save_player_answer.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${var.websocket_api_gateway_execution_arn}/*/*"
+}
