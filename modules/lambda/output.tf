@@ -38,15 +38,15 @@ output "create_game_session_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for POST game session"
 }
 
-output "start_game_session_function_invoke_arn" {
-  value       = module.game.start_game_session_function_invoke_arn
-  description = "Invoke ARN of the lambda function for PUT game session"
-}
+#output "start_game_session_function_invoke_arn" {
+#  value       = module.game.start_game_session_function_invoke_arn
+#  description = "Invoke ARN of the lambda function for PUT game session"
+#}
 
-output "start_game_session_function_arn" {
-  value       = module.game.start_game_session_function_arn
-  description = "ARN of the lambda function for PUT game session"
-}
+#output "start_game_session_function_arn" {
+#  value       = module.game.start_game_session_function_arn
+#  description = "ARN of the lambda function for PUT game session"
+#}
 
 output "answer_question_function_invoke_arn" {
   value       = module.game.answer_question_function_invoke_arn
@@ -101,4 +101,9 @@ output "send_final_results_function_arn" {
 output "save_player_answer_function_invoke_arn" {
   value       = module.websocket_game.save_player_answer_function_invoke_arn
   description = "Invoke ARN of the lambda function for saving the answer of a player"
+}
+
+output "start_game_session_function_invoke_arn" {
+  value       = module.websocket_game.start_game_session_function_arn
+  description = "Invoke ARN of the lambda function to start the game session"
 }

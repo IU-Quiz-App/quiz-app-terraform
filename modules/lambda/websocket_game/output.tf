@@ -17,3 +17,8 @@ output "send_updated_game_session_function_arn" {
   value       = aws_lambda_function.send_updated_game_session.invoke_arn
   description = "ARN of the lambda function to send the updated game session to players"
 }
+
+output "start_game_session_function_arn" {
+  value       = aws_lambda_function.start_game_session.invoke_arn
+  description = "ARN of the lambda function for start the game session"
+}
