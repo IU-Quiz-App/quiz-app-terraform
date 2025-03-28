@@ -23,11 +23,19 @@ resource "aws_lambda_function" "start_game_session" {
 
   environment {
     variables = {
-      STAGE                          = var.stage,
-      DOMAIN                         = var.domain,
-      WEBSOCKET_API_GATEWAY_ENDPOINT = var.websocket_api_gateway_endpoint
+      STAGE             = var.stage,
+      STEP_FUNCTION_ARN = var.game_step_function_arn
     }
   }
   #TODO:
   #dead_letter_config {}
+}
+
+resource "aws_lambda_permission" "api_gw_trigger_start_game_session_permission" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.start_game_session.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${var.websocket_api_gateway_execution_arn}/*/*"
 }

@@ -38,16 +38,6 @@ output "create_game_session_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for POST game session"
 }
 
-#output "start_game_session_function_invoke_arn" {
-#  value       = module.game.start_game_session_function_invoke_arn
-#  description = "Invoke ARN of the lambda function for PUT game session"
-#}
-
-#output "start_game_session_function_arn" {
-#  value       = module.game.start_game_session_function_arn
-#  description = "ARN of the lambda function for PUT game session"
-#}
-
 output "answer_question_function_invoke_arn" {
   value       = module.game.answer_question_function_invoke_arn
   description = "Invoke ARN of the lambda function for POST answer question"

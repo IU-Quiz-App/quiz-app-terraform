@@ -18,7 +18,7 @@ variable "api_gateway_execution_arn" {
   type        = string
 }
 
-variable "game_step_function_arn" {
-  description = "ARN of the game step function"
-  type        = string
-}
+#variable "game_step_function_arn" {
+#  description = "ARN of the game step function"
+#  type        = string
+#}
