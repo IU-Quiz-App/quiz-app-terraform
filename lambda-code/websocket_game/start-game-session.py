@@ -24,7 +24,7 @@ def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
     body = json.loads(event["body"])
 
-    game_session_uuid = body.get("uuid")
+    game_session_uuid = body.get("game_session_uuid")
     course_name = body.get("course_name")
     quiz_length = body.get("quiz_length")
 
