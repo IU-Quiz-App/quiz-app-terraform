@@ -97,3 +97,8 @@ output "start_game_session_function_invoke_arn" {
   value       = module.websocket_game.start_game_session_function_arn
   description = "Invoke ARN of the lambda function to start the game session"
 }
+
+output "send_action_message_function_arn" {
+  value       = module.websocket_game.send_action_message_function_arn
+  description = "ARN of the lambda function to send the action message to players"
+}

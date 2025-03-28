@@ -27,3 +27,9 @@ resource "aws_cloudwatch_log_group" "start_game_session" {
   log_group_class   = "STANDARD"
   retention_in_days = 30
 }
+
+resource "aws_cloudwatch_log_group" "send_action_message" {
+  name              = "/aws/lambda/${var.stage}/websocket/send_action_message"
+  log_group_class   = "STANDARD"
+  retention_in_days = 30
+}

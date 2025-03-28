@@ -15,6 +15,24 @@ resource "aws_sfn_state_machine" "game_state_machine" {
         "quiz_length": "{% $states.input.quiz_length %}",
         "current_question_index": "{% 0 %}"
       },
+      "Next": "Game starts"
+    },
+    "Game starts": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Output": "{% $states.result.Payload %}",
+      "Arguments": {
+        "FunctionName": "${var.send_action_message_function_arn}",
+        "Payload": {
+          "game_session_uuid": "{% $game_session_uuid %}",
+          "action_type": "quiz-started"
+        }
+      },
+      "Next": "Wait until game starts"
+    },
+    "Wait until game starts": {
+      "Type": "Wait",
+      "Seconds": 5,
       "Next": "Send next question"
     },
     "Send next question": {
@@ -75,13 +93,49 @@ resource "aws_sfn_state_machine" "game_state_machine" {
       "Choices": [
         {
           "Condition": "{% $current_question_index != $quiz_length %}",
-          "Next": "Send next question"
+          "Next": "Next question incoming"
         },
         {
           "Condition": "{% $current_question_index = $quiz_length %}",
-          "Next": "Send result to players"          
+          "Next": "Quiz ended"          
         }
       ]
+    },
+    "Next question incoming": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Output": "{% $states.result.Payload %}",
+      "Arguments": {
+        "FunctionName": "${var.send_action_message_function_arn}",
+        "Payload": {
+          "game_session_uuid": "{% $game_session_uuid %}",
+          "action_type": "next-question-incoming"
+        }
+      },
+      "Next": "Wait until next question"
+    },
+    "Wait until next question": {
+      "Type": "Wait",
+      "Seconds": 5,
+      "Next": "Send next question"
+    },
+    "Quiz ended": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Output": "{% $states.result.Payload %}",
+      "Arguments": {
+        "FunctionName": "${var.send_action_message_function_arn}",
+        "Payload": {
+          "game_session_uuid": "{% $game_session_uuid %}",
+          "action_type": "quiz-ended"
+        }
+      },
+      "Next": "Wait until results are sent"
+    },
+    "Wait until results are sent": {
+      "Type": "Wait",
+      "Seconds": 5,
+      "Next": "Send result to players"
     },
     "Send result to players": {
       "Type": "Task",

@@ -22,3 +22,8 @@ output "start_game_session_function_arn" {
   value       = aws_lambda_function.start_game_session.invoke_arn
   description = "ARN of the lambda function for start the game session"
 }
+
+output "send_action_message_function_arn" {
+  value       = aws_lambda_function.send_action_message.arn
+  description = "ARN of the lambda function to send the action message to players"
+}

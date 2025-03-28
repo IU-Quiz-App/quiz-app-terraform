@@ -22,3 +22,8 @@ variable "save_task_token_function_arn" {
   description = "ARN of the lambda function to save the task token of Wait for player answers state to DynamoDB"
   type        = string
 }
+
+variable "send_action_message_function_arn" {
+  description = "ARN of the lambda function to send the action message to all players"
+  type        = string
+}
