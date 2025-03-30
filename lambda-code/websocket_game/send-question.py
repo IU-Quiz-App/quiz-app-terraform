@@ -25,19 +25,22 @@ def lambda_handler(event, context):
 
     game_session_uuid = event.get("game_session_uuid")
     current_question_index = event.get("current_question_index")
+    action_type = event.get("action_type")
 
     if not game_session_uuid:
         return response(400, {"error": "Missing game_session_uuid"})
     if current_question_index is None:
         return response(400, {"error": "Missing current_question_index"})
+    if action_type is None:
+        return response(400, {"error": "Missing action_type"})
     
     try:    
         game_session_item = get_game_session(game_session_uuid)
         if not game_session_item:
             return response(404, {"error": "Game session not found"})
         
-        question = get_question(game_session_item, current_question_index)
-        send_question_to_all_players(game_session_uuid, question)
+        question = get_question(game_session_item, current_question_index, action_type)
+        send_question_to_all_players(game_session_uuid, question, action_type)
         question_uuid = game_session_item["questions"][current_question_index]["uuid"]
         logger.info(f"Question uuid: {question_uuid}")
         return response(200, {"message": "Question sent to all players", "current_question_uuid": question_uuid})
@@ -50,20 +53,21 @@ def get_game_session(game_session_uuid):
     response = game_sessions_table.get_item(Key={"uuid": game_session_uuid})
     return response.get("Item")
 
-def get_question(game_session_item, question_index):
+def get_question(game_session_item, question_index, action_type):
     question = game_session_item["questions"][question_index]
 
-    # Randomize answers
-    answers = question["answers"]
-    for answer in answers:
-        answer["isTrue"] = False
-    random.shuffle(answers)
-    question["answers"] = answers
+    if action_type == "next-question":
+        # Randomize answers
+        answers = question["answers"]
+        for answer in answers:
+            answer["isTrue"] = False
+        random.shuffle(answers)
+        question["answers"] = answers
 
     logger.info(f"Question with shuffled answers: {question}")
     return question
 
-def send_question_to_all_players(game_session_uuid, question):
+def send_question_to_all_players(game_session_uuid, question, action_type):
     logger.info(f"Sending question to all clients in session: {game_session_uuid}")
     response = websocket_connections_table.scan(
         FilterExpression="game_session_uuid = :session",
@@ -80,7 +84,7 @@ def send_question_to_all_players(game_session_uuid, question):
             apigateway_management.post_to_connection(
                 ConnectionId=connection_id,
                 Data=json.dumps({
-                    "action": "next-question",
+                    "action": action_type,
                     "question": question
                 })
             )

@@ -78,9 +78,9 @@ output "update_websocket_information_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for updating websocket information"
 }
 
-output "send_next_question_function_arn" {
-  value       = module.websocket_game.send_next_question_function_arn
-  description = "ARN of the lambda function to send the next question to players"
+output "send_question_function_arn" {
+  value       = module.websocket_game.send_question_function_arn
+  description = "ARN of the lambda function to send the question to players"
 }
 
 output "send_final_results_function_arn" {

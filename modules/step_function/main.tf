@@ -41,14 +41,14 @@ resource "aws_sfn_state_machine" "game_state_machine" {
       "Resource": "arn:aws:states:::lambda:invoke",
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
-        "FunctionName": "${var.send_next_question_function_arn}",
+        "FunctionName": "${var.send_question_function_arn}",
         "Payload": {
           "game_session_uuid": "{% $game_session_uuid %}",
-          "current_question_index": "{% $current_question_index %}"
+          "current_question_index": "{% $current_question_index %}",
+          "action_type": "next-question"
         }
       },
       "Assign": {
-        "current_question_index": "{% $current_question_index + 1 %}",
         "current_question_uuid": "{% $states.result.Payload.body.current_question_uuid %}"
       },
       "Next": "Wait for player answers"
@@ -72,7 +72,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
           "Next": "Set unanswered questions to false"
         }
       ],
-      "Next": "Last question reached"
+      "Next": "Question answered"
     },
     "Set unanswered questions to false": {
       "Type": "Task",
@@ -85,6 +85,24 @@ resource "aws_sfn_state_machine" "game_state_machine" {
           "game_session_uuid": "{% $game_session_uuid %}",
           "current_question_uuid": "{% $current_question_uuid %}"
         }
+      },
+      "Next": "Question answered"
+    },
+    "Question answered": {
+      "Type": "Task",
+      "Comment": "Set questions to false/unanswered that were not answered by players",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Output": "{% $states.result.Payload %}",
+      "Arguments": {
+        "FunctionName": "${var.send_question_function_arn}",
+        "Payload": {
+          "game_session_uuid": "{% $game_session_uuid %}",
+          "current_question_index": "{% $current_question_index %}",
+          "action_type": "question-answered"
+        }
+      },
+      "Assign": {
+        "current_question_index": "{% $current_question_index + 1 %}"
       },
       "Next": "Last question reached"
     },

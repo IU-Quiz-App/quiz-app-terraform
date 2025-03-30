@@ -71,7 +71,7 @@ module "cloudfront" {
 module "step_function" {
   source                                      = "../step_function"
   stage                                       = var.stage
-  send_next_question_function_arn             = module.lambda.send_next_question_function_arn
+  send_question_function_arn                  = module.lambda.send_question_function_arn
   send_final_results_function_arn             = module.lambda.send_final_results_function_arn
   set_unanswered_questions_false_function_arn = module.lambda.set_unanswered_questions_false_function_arn
   save_task_token_function_arn                = module.lambda.save_task_token_function_arn

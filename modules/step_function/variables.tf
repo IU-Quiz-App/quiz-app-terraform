@@ -3,8 +3,8 @@ variable "stage" {
   type        = string
 }
 
-variable "send_next_question_function_arn" {
-  description = "ARN of the lambda function to send the next question to players"
+variable "send_question_function_arn" {
+  description = "ARN of the lambda function to send the question to players"
   type        = string
 }
 
