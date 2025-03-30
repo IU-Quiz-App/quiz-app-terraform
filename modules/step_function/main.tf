@@ -19,6 +19,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
     },
     "Game starts": {
       "Type": "Task",
+      "Comment": "Send information to frontend that the game starts",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
@@ -32,6 +33,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
     },
     "Wait until game starts": {
       "Type": "Wait",
+      "Comment": "Wait for countdown to start the game",
       "Seconds": 5,
       "Next": "Send next question"
     },
@@ -90,7 +92,27 @@ resource "aws_sfn_state_machine" "game_state_machine" {
     },
     "Question answered": {
       "Type": "Task",
-      "Comment": "Set questions to false/unanswered that were not answered by players",
+      "Comment": "Send information to frontend that all players have answered the question",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Output": "{% $states.result.Payload %}",
+      "Arguments": {
+        "FunctionName": "${var.send_action_message_function_arn}",
+        "Payload": {
+          "game_session_uuid": "{% $game_session_uuid %}",
+          "action_type": "question-answered"
+        }
+      },
+      "Next": "Countdown to show answer"
+    },
+    "Countdown to show answer": {
+      "Type": "Wait",
+      "Comment": "Wait for countdown to show the correct answer",
+      "Seconds": 5,
+      "Next": "Correct answer"
+    },
+    "Correct answer": {
+      "Type": "Task",
+      "Comment": "Send the question with the correct answer to the players",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
@@ -98,16 +120,23 @@ resource "aws_sfn_state_machine" "game_state_machine" {
         "Payload": {
           "game_session_uuid": "{% $game_session_uuid %}",
           "current_question_index": "{% $current_question_index %}",
-          "action_type": "question-answered"
+          "action_type": "correct-answer"
         }
       },
       "Assign": {
         "current_question_index": "{% $current_question_index + 1 %}"
       },
+      "Next": "Let players check correct answer"
+    },
+    "Let players check correct answer": {
+      "Type": "Wait",
+      "Comment": "Let players check the the correct answer",
+      "Seconds": 5,
       "Next": "Last question reached"
     },
     "Last question reached": {
       "Type": "Choice",
+      "Comment": "Check if the last question is reached",
       "Choices": [
         {
           "Condition": "{% $current_question_index != $quiz_length %}",
@@ -121,6 +150,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
     },
     "Next question incoming": {
       "Type": "Task",
+      "Comment": "Send information to frontend that the next question will be sent",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
@@ -134,11 +164,13 @@ resource "aws_sfn_state_machine" "game_state_machine" {
     },
     "Wait until next question": {
       "Type": "Wait",
+      "Comment": "Wait for countdown to show the next question",
       "Seconds": 5,
       "Next": "Send next question"
     },
     "Quiz ended": {
       "Type": "Task",
+      "Comment": "Send information to frontend that all questions are answered",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
@@ -152,6 +184,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
     },
     "Wait until results are sent": {
       "Type": "Wait",
+      "Comment": "Wait for countdown to show the final results",
       "Seconds": 5,
       "Next": "Send result to players"
     },
