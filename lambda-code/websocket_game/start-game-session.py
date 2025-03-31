@@ -51,18 +51,26 @@ def lambda_handler(event, context):
         
         # Provide random questions for the quiz based on quiz_length
         questions_for_quiz = random.sample(questions, quiz_length)
+
+        shuffled_questions = []
+
+        for question in questions_for_quiz:
+            answers = question["answers"]
+            random.shuffle(answers)
+            question["answers"] = answers
+            shuffled_questions.append(question)
+
         logger.info("Questions for quiz: %s", questions_for_quiz)
 
         started_at = datetime.datetime.now().isoformat()
 
-        current_question = questions_for_quiz[0]["uuid"]
 
         # Update the session with the questions and course name
         game_session_table.update_item(
             Key = {"uuid": game_session_uuid},
             UpdateExpression = "SET questions = :questions, course_name = :course_name, started_at = :started_at, current_question = :current_question",
             ExpressionAttributeValues = {
-                ":questions": questions_for_quiz, 
+                ":questions": shuffled_questions,
                 ":course_name": course_name, 
                 ":started_at": started_at, 
                 ":current_question": 0}

@@ -61,7 +61,6 @@ def get_question(game_session_item, question_index, action_type):
         answers = question["answers"]
         for answer in answers:
             answer["isTrue"] = False
-        random.shuffle(answers)
         question["answers"] = answers
 
     logger.info(f"Question with shuffled answers: {question}")
