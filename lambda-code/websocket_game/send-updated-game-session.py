@@ -26,6 +26,8 @@ def lambda_handler(event, context):
 
     game_session_uuid = event.get("game_session_uuid")
 
+    update_reason = event.get("update_reason")
+
     if not game_session_uuid:
         logger.info("Missing game_session_uuid")
         return {"statusCode": 400, "body": json.dumps({"error": "Missing game_session_uuid"})}
@@ -45,14 +47,14 @@ def lambda_handler(event, context):
         if not game_session_item:
             return {"statusCode": 400, "body": json.dumps({"error": "Game session not found"})}
 
-        send_updated_session_to_all_players(game_session_item)
+        send_updated_session_to_all_players(game_session_item, update_reason)
         return {"statusCode": 200, "body": json.dumps({"message": "Session sent to all players"})}
 
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
 
-def send_updated_session_to_all_players(game_session_item):
+def send_updated_session_to_all_players(game_session_item, update_reason):
     logger.info(f"Sending updated session to all clients in session: {game_session_item}")
 
     response = websocket_connections_table.scan(
@@ -67,12 +69,17 @@ def send_updated_session_to_all_players(game_session_item):
     for connection in connections:
         connection_id = connection["connection_uuid"]
         try:
+            data = {
+                "action": "update-game-session",
+                "game_session": game_session_item
+            }
+
+            if update_reason:
+                data["update_reason"] = update_reason
+
             apigateway_management.post_to_connection(
                 ConnectionId=connection_id,
-                Data=json.dumps({
-                    "action": "update-game-session",
-                    "game_session": game_session_item
-                }),
+                Data=json.dumps(data)
             )
             logger.info(f"Sent updated session to {connection_id}")
 
