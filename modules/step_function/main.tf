@@ -195,7 +195,9 @@ resource "aws_sfn_state_machine" "game_state_machine" {
       "Output": "{% $states.result.Payload %}",
       "Arguments": {
         "FunctionName": "${var.send_final_results_function_arn}",
-        "Payload": "{% $states.input %}"
+        "Payload": {
+          "game_session_uuid": "{% $game_session_uuid %}"
+        }
       },
       "End": true
     }
