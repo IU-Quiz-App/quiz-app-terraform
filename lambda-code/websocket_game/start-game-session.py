@@ -27,6 +27,7 @@ def lambda_handler(event, context):
     game_session_uuid = body.get("game_session_uuid")
     course_name = body.get("course_name")
     quiz_length = body.get("quiz_length")
+    question_response_time = body.get("question_response_time", 5)
 
     if not game_session_uuid:
         return {"statusCode": 400, "body": json.dumps({"error": "uuid of the game session is required"})}
@@ -128,6 +129,7 @@ def lambda_handler(event, context):
             input=json.dumps({
                 "game_session_uuid": game_session_uuid,
                 "quiz_length": quiz_length,
+                "question_response_time": question_response_time,
             })
         )
 

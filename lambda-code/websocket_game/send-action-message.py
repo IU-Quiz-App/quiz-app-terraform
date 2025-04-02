@@ -24,18 +24,21 @@ def lambda_handler(event, context):
 
     game_session_uuid = event.get("game_session_uuid")
     action_type = event.get("action_type")
+    wait_seconds = event.get("wait_seconds")
 
     if not game_session_uuid:
         return response(400, {"error": "Missing game_session_uuid"})
     if not action_type:
         return response(400, {"error": "Missing action_type"})
+    if not wait_seconds:
+        return response(400, {"error": "Missing wait_seconds"})
     
     try:    
         game_session_item = get_game_session(game_session_uuid)
         if not game_session_item:
             return response(404, {"error": "Game session not found"})
         
-        send_action_message_to_all_players(game_session_uuid, action_type)
+        send_action_message_to_all_players(game_session_uuid, action_type, wait_seconds)
         return response(200, {"message": f"Action {action_type} sent to all players"})
     
     except Exception as e:
@@ -46,7 +49,7 @@ def get_game_session(game_session_uuid):
     response = game_sessions_table.get_item(Key={"uuid": game_session_uuid})
     return response.get("Item")
 
-def send_action_message_to_all_players(game_session_uuid, action_type):
+def send_action_message_to_all_players(game_session_uuid, action_type, wait_seconds):
     logger.info(f"Sending action {action_type} to all clients in session: {game_session_uuid}")
     response = websocket_connections_table.scan(
         FilterExpression="game_session_uuid = :session",
@@ -64,9 +67,10 @@ def send_action_message_to_all_players(game_session_uuid, action_type):
                 ConnectionId=connection_id,
                 Data=json.dumps({
                     "action": action_type,
+                    "wait_seconds": wait_seconds,
                 })
             )
-            logger.info(f"Sent action {action_type} to {connection_id}")
+            logger.info(f"Sent action {action_type} and wait seconds {wait_seconds} to {connection_id}")
 
         except apigateway_management.exceptions.GoneException:
             logger.info(f"Connection {connection_id} is gone")

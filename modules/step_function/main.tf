@@ -13,7 +13,13 @@ resource "aws_sfn_state_machine" "game_state_machine" {
       "Assign": {
         "game_session_uuid": "{% $states.input.game_session_uuid %}",
         "quiz_length": "{% $states.input.quiz_length %}",
-        "current_question_index": "{% 0 %}"
+        "current_question_index": "{% 0 %}",
+        "wait_until_game_starts_seconds": "{% 5 %}",
+        "wait_until_answer_is_shown_seconds": "{% 3 %}",
+        "wait_let_players_check_correct_answer_seconds": "{% 15 %}",
+        "wait_until_results_are_sent_seconds": "{% 5 %}",
+        "wait_until_next_question_seconds": "{% 5 %}",
+        "question_response_time_seconds": "{% $states.input.question_response_time %}"
       },
       "Next": "Game starts"
     },
@@ -34,7 +40,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
     "Wait until game starts": {
       "Type": "Wait",
       "Comment": "Wait for countdown to start the game",
-      "Seconds": 5,
+      "Seconds": "{% $wait_until_game_starts_seconds %}",
       "Next": "Send next question"
     },
     "Send next question": {
@@ -67,7 +73,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
           "task_token": "{% $states.context.Task.Token %}"
         }
       },
-      "TimeoutSeconds": 5,
+      "TimeoutSeconds": "{% $question_response_time_seconds %}",
       "Catch": [
         {
           "ErrorEquals": ["States.Timeout"],
@@ -102,12 +108,12 @@ resource "aws_sfn_state_machine" "game_state_machine" {
           "action_type": "question-answered"
         }
       },
-      "Next": "Countdown to show answer"
+      "Next": "Wait until answer is shown"
     },
-    "Countdown to show answer": {
+    "Wait until answer is shown": {
       "Type": "Wait",
       "Comment": "Wait for countdown to show the correct answer",
-      "Seconds": 5,
+      "Seconds": "{% $wait_until_answer_is_shown_seconds %}",
       "Next": "Correct answer"
     },
     "Correct answer": {
@@ -126,12 +132,12 @@ resource "aws_sfn_state_machine" "game_state_machine" {
       "Assign": {
         "current_question_index": "{% $current_question_index + 1 %}"
       },
-      "Next": "Let players check correct answer"
+      "Next": "Wait let players check correct answer"
     },
-    "Let players check correct answer": {
+    "Wait let players check correct answer": {
       "Type": "Wait",
       "Comment": "Let players check the the correct answer",
-      "Seconds": 5,
+      "Seconds": "{% $wait_let_players_check_correct_answer_seconds %}",
       "Next": "Last question reached"
     },
     "Last question reached": {
@@ -165,7 +171,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
     "Wait until next question": {
       "Type": "Wait",
       "Comment": "Wait for countdown to show the next question",
-      "Seconds": 5,
+      "Seconds": "{% $wait_until_next_question_seconds %}",
       "Next": "Send next question"
     },
     "Quiz ended": {
@@ -185,7 +191,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
     "Wait until results are sent": {
       "Type": "Wait",
       "Comment": "Wait for countdown to show the final results",
-      "Seconds": 5,
+      "Seconds": "{% $wait_until_results_are_sent_seconds %}",
       "Next": "Send result to players"
     },
     "Send result to players": {
