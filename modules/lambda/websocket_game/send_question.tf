@@ -24,7 +24,6 @@ resource "aws_lambda_function" "send_question" {
   environment {
     variables = {
       STAGE                          = var.stage,
-      DOMAIN                         = var.domain,
       WEBSOCKET_API_GATEWAY_ENDPOINT = var.websocket_api_gateway_endpoint
     }
   }

@@ -28,7 +28,8 @@ def lambda_handler(event, context):
     game_session_uuid = event.get("game_session_uuid")
 
     if not game_session_uuid:
-        return response(400, {"error": "Missing game_session_uuid"})
+        logger.error("Missing game_session_uuid")
+        raise ValueError("Missing game_session_uuid")
     try:
 
         ended_at = datetime.datetime.now().isoformat()
@@ -40,7 +41,6 @@ def lambda_handler(event, context):
                 ":ended_at": ended_at
             }
         )
-
 
         update_game_session_response = lambda_client.invoke(
             FunctionName=f"send_updated_game_session_{stage}",

@@ -24,7 +24,6 @@ resource "aws_lambda_function" "save_player_answer" {
   environment {
     variables = {
       STAGE                          = var.stage,
-      DOMAIN                         = var.domain,
       WEBSOCKET_API_GATEWAY_ENDPOINT = var.websocket_api_gateway_endpoint
     }
   }

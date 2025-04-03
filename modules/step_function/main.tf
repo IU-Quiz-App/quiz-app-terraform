@@ -17,8 +17,8 @@ resource "aws_sfn_state_machine" "game_state_machine" {
         "wait_until_game_starts_seconds": "{% 5 %}",
         "wait_until_answer_is_shown_seconds": "{% 3 %}",
         "wait_let_players_check_correct_answer_seconds": "{% 15 %}",
-        "wait_until_results_are_sent_seconds": "{% 5 %}",
         "wait_until_next_question_seconds": "{% 5 %}",
+        "wait_until_results_are_sent_seconds": "{% 5 %}",
         "question_response_time_seconds": "{% $states.input.question_response_time %}"
       },
       "Next": "Game starts"
@@ -32,7 +32,8 @@ resource "aws_sfn_state_machine" "game_state_machine" {
         "FunctionName": "${var.send_action_message_function_arn}",
         "Payload": {
           "game_session_uuid": "{% $game_session_uuid %}",
-          "action_type": "quiz-started"
+          "action_type": "quiz-started",
+          "wait_seconds": "{% $wait_until_game_starts_seconds %}"
         }
       },
       "Next": "Wait until game starts"
@@ -53,7 +54,8 @@ resource "aws_sfn_state_machine" "game_state_machine" {
         "Payload": {
           "game_session_uuid": "{% $game_session_uuid %}",
           "current_question_index": "{% $current_question_index %}",
-          "action_type": "next-question"
+          "action_type": "next-question",
+          "wait_seconds": "{% $question_response_time_seconds %}"
         }
       },
       "Assign": {
@@ -105,7 +107,8 @@ resource "aws_sfn_state_machine" "game_state_machine" {
         "FunctionName": "${var.send_action_message_function_arn}",
         "Payload": {
           "game_session_uuid": "{% $game_session_uuid %}",
-          "action_type": "question-answered"
+          "action_type": "question-answered",
+          "wait_seconds": "{% $wait_until_answer_is_shown_seconds %}"
         }
       },
       "Next": "Wait until answer is shown"
@@ -126,7 +129,8 @@ resource "aws_sfn_state_machine" "game_state_machine" {
         "Payload": {
           "game_session_uuid": "{% $game_session_uuid %}",
           "current_question_index": "{% $current_question_index %}",
-          "action_type": "correct-answer"
+          "action_type": "correct-answer",
+          "wait_seconds": "{% $wait_let_players_check_correct_answer_seconds %}"
         }
       },
       "Assign": {
@@ -163,7 +167,8 @@ resource "aws_sfn_state_machine" "game_state_machine" {
         "FunctionName": "${var.send_action_message_function_arn}",
         "Payload": {
           "game_session_uuid": "{% $game_session_uuid %}",
-          "action_type": "next-question-incoming"
+          "action_type": "next-question-incoming",
+          "wait_seconds": "{% $wait_until_next_question_seconds %}"
         }
       },
       "Next": "Wait until next question"
@@ -183,7 +188,8 @@ resource "aws_sfn_state_machine" "game_state_machine" {
         "FunctionName": "${var.send_action_message_function_arn}",
         "Payload": {
           "game_session_uuid": "{% $game_session_uuid %}",
-          "action_type": "quiz-ended"
+          "action_type": "quiz-ended",
+          "wait_seconds": "{% $wait_until_results_are_sent_seconds %}"
         }
       },
       "Next": "Wait until results are sent"

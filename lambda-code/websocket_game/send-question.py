@@ -2,7 +2,6 @@ import json
 import os
 import logging
 import boto3
-import random
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -28,16 +27,20 @@ def lambda_handler(event, context):
     action_type = event.get("action_type")
 
     if not game_session_uuid:
-        return response(400, {"error": "Missing game_session_uuid"})
+        logger.error("Missing game_session_uuid")
+        raise ValueError("Missing game_session_uuid")
     if current_question_index is None:
-        return response(400, {"error": "Missing current_question_index"})
-    if action_type is None:
-        return response(400, {"error": "Missing action_type"})
+        logger.error("Missing current_question_index")
+        raise ValueError("Missing current_question_index")
+    if not action_type:
+        logger.error("Missing action_type")
+        raise ValueError("Missing action_type")
     
     try:    
         game_session_item = get_game_session(game_session_uuid)
         if not game_session_item:
-            return response(404, {"error": "Game session not found"})
+            logger.error("Game session not found")
+            raise ValueError("Game session not found")
         
         question = get_question(game_session_item, current_question_index, action_type)
         send_question_to_all_players(game_session_uuid, question, action_type)
@@ -57,7 +60,7 @@ def get_question(game_session_item, question_index, action_type):
     question = game_session_item["questions"][question_index]
 
     if action_type == "next-question":
-        # Randomize answers
+        # Set all answers to false to prevent cheating
         answers = question["answers"]
         for answer in answers:
             answer["isTrue"] = False

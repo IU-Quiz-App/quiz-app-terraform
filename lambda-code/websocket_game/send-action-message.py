@@ -27,11 +27,11 @@ def lambda_handler(event, context):
     wait_seconds = event.get("wait_seconds")
 
     if not game_session_uuid:
-        return response(400, {"error": "Missing game_session_uuid"})
+        raise ValueError("Missing game_session_uuid")
     if not action_type:
-        return response(400, {"error": "Missing action_type"})
-    if not wait_seconds:
-        return response(400, {"error": "Missing wait_seconds"})
+        raise ValueError("Missing action_type")
+    if wait_seconds is None:
+        raise ValueError("Missing wait_seconds")
     
     try:    
         game_session_item = get_game_session(game_session_uuid)

@@ -17,9 +17,11 @@ def lambda_handler(event, context):
     task_token = event.get("task_token")
 
     if not game_session_uuid:
-        return response(400, {"error": "Missing game_session_uuid"})
+        logger.error("Missing game_session_uuid")
+        raise ValueError("Missing game_session_uuid")
     if not task_token:
-        return response(400, {"error": "Missing task_token"})
+        logger.error("Missing task_token")
+        raise ValueError("Missing task_token")
     
     try:
         game_sessions_table.update_item(

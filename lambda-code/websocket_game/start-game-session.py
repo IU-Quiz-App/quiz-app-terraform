@@ -11,6 +11,8 @@ logger = logging.getLogger()
 
 stage = os.environ.get('STAGE')
 step_function_arn = os.environ.get('STEP_FUNCTION_ARN')
+websocket_wss_api_endpoint = os.environ.get('WEBSOCKET_API_GATEWAY_ENDPOINT')
+websocket_api_endpoint = f"{websocket_wss_api_endpoint.replace('wss', 'https')}/{stage}"
 
 dynamodb = boto3.resource("dynamodb")
 game_session_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
@@ -20,26 +22,48 @@ game_answers_table = dynamodb.Table(f"iu-quiz-game-answers-{stage}")
 stepfunctions = boto3.client("stepfunctions")
 lambda_client = boto3.client("lambda")
 
+apigateway_management = boto3.client(
+    "apigatewaymanagementapi",
+    endpoint_url=websocket_api_endpoint
+)
+
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
     body = json.loads(event["body"])
 
+    logger.info(f"websocket_api_endpoint: {websocket_api_endpoint}")
+
+    default_response_time = 5
+
+    connection_id = event["requestContext"]["connectionId"]
+
     game_session_uuid = body.get("game_session_uuid")
     course_name = body.get("course_name")
     quiz_length = body.get("quiz_length")
-    question_response_time = body.get("question_response_time", 5)
+    question_response_time = body.get("question_response_time", default_response_time)
 
     if not game_session_uuid:
-        return {"statusCode": 400, "body": json.dumps({"error": "uuid of the game session is required"})}
+        logger.error("Missing game_session_uuid")
+        send_error_response(connection_id, "Missing game_session_uuid")
+        return
     if not course_name:
-        return {"statusCode": 400, "body": json.dumps({"error": "course_name is required"})}
+        logger.error("Missing course_name")
+        send_error_response(connection_id, "Missing course_name")
+        return
     if not quiz_length:
-        return {"statusCode": 400, "body": json.dumps({"error": "quiz_length is required"})}
+        logger.error("Missing quiz_length")
+        send_error_response(connection_id, "Missing quiz_length")
+        return
+    if "question_response_time" not in body:
+        logger.error(f"Missing question_response_time, set to default {default_response_time}")
+        send_error_response(connection_id, f"Missing question_response_time, set to default {default_response_time}")
         
     try:
         quiz_length = int(quiz_length)
     except ValueError:
-        return {"statusCode": 400, "body": json.dumps({"error": "quiz_length must be an integer"})}
+        logger.error("quiz_length must be an integer")
+        send_error_response(connection_id, "quiz_length must be an integer")
+        return
 
     try:
 
@@ -48,7 +72,9 @@ def lambda_handler(event, context):
 
         # Check if questions are less than quiz_length
         if len(questions) < quiz_length:
-            return {"statusCode": 400, "body": json.dumps({"error": "Not enough questions for quiz"})}
+            logger.error(f"Not enough questions available for quiz length {quiz_length}")
+            send_error_response(connection_id, f"Not enough questions available for quiz length {quiz_length}")
+            return
         
         # Provide random questions for the quiz based on quiz_length
         questions_for_quiz = random.sample(questions, quiz_length)
@@ -161,3 +187,18 @@ def get_public_questions(course_name):
         }
     )
     return response.get("Items", [])
+
+def send_error_response(connection_id, error_message):
+    logger.info(f"Sending error response to connection {connection_id}: {error_message}")
+    try:
+        response = apigateway_management.post_to_connection(
+            ConnectionId=connection_id,
+            Data=json.dumps({
+                "action_type": "quiz-ended",
+                "error": error_message
+            })
+        )
+        logger.info(f"Response: {response}")
+        logger.info(f"Error response sent to connection {connection_id}")
+    except Exception as e:
+        logger.error(f"Error sending error response: {str(e)}")

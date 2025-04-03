@@ -2,7 +2,6 @@ import json
 import os
 import logging
 import boto3
-import random
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -31,6 +30,9 @@ def lambda_handler(event, context):
     if not game_session_uuid:
         logger.info("Missing game_session_uuid")
         return {"statusCode": 400, "body": json.dumps({"error": "Missing game_session_uuid"})}
+    if not update_reason:
+        logger.info("Missing update_reason")
+        return {"statusCode": 400, "body": json.dumps({"error": "Missing update_reason"})}
 
     try:
         result = lambda_client.invoke(
@@ -43,8 +45,8 @@ def lambda_handler(event, context):
         body = json.loads(result["Payload"].read()).get("body")
         game_session_item = json.loads(body)
 
-
         if not game_session_item:
+            logger.error("Game session not found")
             return {"statusCode": 400, "body": json.dumps({"error": "Game session not found"})}
 
         send_updated_session_to_all_players(game_session_item, update_reason)
