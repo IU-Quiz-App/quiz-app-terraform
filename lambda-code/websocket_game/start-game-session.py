@@ -194,7 +194,6 @@ def send_error_response(connection_id, error_message):
         response = apigateway_management.post_to_connection(
             ConnectionId=connection_id,
             Data=json.dumps({
-                "action_type": "quiz-ended",
                 "error": error_message
             })
         )
