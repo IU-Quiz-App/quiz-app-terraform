@@ -25,6 +25,7 @@ def lambda_handler(event, context):
     game_session_uuid = event.get("game_session_uuid")
     current_question_index = event.get("current_question_index")
     action_type = event.get("action_type")
+    wait_seconds = event.get("wait_seconds")
 
     if not game_session_uuid:
         logger.error("Missing game_session_uuid")
@@ -35,6 +36,9 @@ def lambda_handler(event, context):
     if not action_type:
         logger.error("Missing action_type")
         raise ValueError("Missing action_type")
+    if not wait_seconds:
+        logger.error("Missing wait_seconds")
+        raise ValueError("Missing wait_seconds")
     
     try:    
         game_session_item = get_game_session(game_session_uuid)
@@ -43,7 +47,7 @@ def lambda_handler(event, context):
             raise ValueError("Game session not found")
         
         question = get_question(game_session_item, current_question_index, action_type)
-        send_question_to_all_players(game_session_uuid, question, action_type)
+        send_question_to_all_players(game_session_uuid, question, action_type, wait_seconds)
         question_uuid = game_session_item["questions"][current_question_index]["uuid"]
         logger.info(f"Question uuid: {question_uuid}")
         return response(200, {"message": "Question sent to all players", "current_question_uuid": question_uuid})
@@ -69,7 +73,7 @@ def get_question(game_session_item, question_index, action_type):
     logger.info(f"Question with shuffled answers: {question}")
     return question
 
-def send_question_to_all_players(game_session_uuid, question, action_type):
+def send_question_to_all_players(game_session_uuid, question, action_type, wait_seconds):
     logger.info(f"Sending question to all clients in session: {game_session_uuid}")
     response = websocket_connections_table.scan(
         FilterExpression="game_session_uuid = :session",
@@ -87,7 +91,8 @@ def send_question_to_all_players(game_session_uuid, question, action_type):
                 ConnectionId=connection_id,
                 Data=json.dumps({
                     "action": action_type,
-                    "question": question
+                    "question": question,
+                    "wait_seconds": wait_seconds
                 })
             )
             logger.info(f"Sent question to {connection_id}")
