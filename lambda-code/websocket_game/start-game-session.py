@@ -145,7 +145,10 @@ def lambda_handler(event, context):
         update_game_session_response = lambda_client.invoke(
             FunctionName=f"send_updated_game_session_{stage}",
             InvocationType="Event",
-            Payload=json.dumps({"game_session_uuid": game_session_uuid})
+            Payload=json.dumps({
+                "game_session_uuid": game_session_uuid,
+                "update_reason": "start-game",
+            })
         )
 
         logger.info(f"Update game session lambda invoked: {update_game_session_response}")
