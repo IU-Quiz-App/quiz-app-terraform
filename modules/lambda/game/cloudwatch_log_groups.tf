@@ -39,3 +39,10 @@ resource "aws_cloudwatch_log_group" "save_task_token" {
   log_group_class   = "STANDARD"
   retention_in_days = 30
 }
+
+resource "aws_cloudwatch_log_group" "join_game_session" {
+  name              = "/aws/lambda/${var.stage}/game/join_game_session"
+  log_group_class   = "STANDARD"
+  retention_in_days = 30
+
+}
