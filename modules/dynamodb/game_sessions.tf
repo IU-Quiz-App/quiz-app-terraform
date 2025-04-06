@@ -19,7 +19,7 @@ resource "aws_dynamodb_table" "game_sessions" {
   }
 
   global_secondary_index {
-    name            = "UserSessionsIndex"
+    name            = "user_sessions_index"
     hash_key        = "created_by"
     range_key       = "created_at"
     projection_type = "ALL"

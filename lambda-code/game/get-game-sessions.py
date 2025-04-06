@@ -1,5 +1,77 @@
+import json
+import boto3
+import logging
+import os
+from decimal import Decimal
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
+
+stage = os.environ.get('STAGE')
+domain = os.environ.get('DOMAIN')
+dynamodb = boto3.resource("dynamodb")
+table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
+
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": f"https://{domain}",
+    "Access-Control-Allow-Methods": "GET, OPTIONS, HEAD",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Credentials": "true"
+}
+
 def lambda_handler(event, context):
-    return {
-        'statusCode': 200,
-        'body': 'This method is not implemented yet but don\'t be afraid, it will work soon! It will be the GET method for game sessions'
-    }
+    try:
+        logger.info("Event: %s", event)
+
+        user_id = event["queryStringParameters"].get("user_id")
+        page = int(event["queryStringParameters"].get("page", 1))
+        page_size = int(event["queryStringParameters"].get("page_size", 10))
+
+        query_params = {
+            "IndexName": "user_sessions_index",
+            "KeyConditionExpression": "#created_by = :user_id",
+            "ExpressionAttributeNames": {
+                "#created_by": "created_by"
+            },
+            "ExpressionAttributeValues": {
+                ":user_id": user_id
+            },
+            "Limit": page_size
+        }
+
+        # Calculate the ExclusiveStartKey based on the page number
+        if page > 1:
+            start_key = None
+            for _ in range(page - 1):
+                response = table.query(**query_params)
+                start_key = response.get("LastEvaluatedKey")
+                if not start_key:
+                    break
+                query_params["ExclusiveStartKey"] = start_key
+
+        response = table.query(**query_params)
+
+        logger.info("Got sessions: %s", response)
+
+        items = response.get("Items")
+
+        logger.info("Got items: %s", items)
+
+        return {
+            "statusCode": 200,
+            "headers": CORS_HEADERS,
+            "body": json.dumps(items, default=decimal_converter)
+        }
+
+    except Exception as e:
+        logger.error("Error getting the sessions: %s", str(e), exc_info=True)
+        return {
+            "statusCode": 500,
+            "headers": CORS_HEADERS,
+            "body": json.dumps({"error": str(e)})
+        }
+
+def decimal_converter(obj):
+    if isinstance(obj, Decimal):
+        return float(obj) if obj % 1 != 0 else int(obj)
+    raise TypeError
