@@ -87,3 +87,8 @@ variable "save_player_answer_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for saving player answer"
   type        = string
 }
+
+variable "join_game_session_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for POST join game session"
+  type        = string
+}

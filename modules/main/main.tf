@@ -30,6 +30,7 @@ module "api_gateway" {
   websocket_disconnect_function_invoke_arn         = module.lambda.websocket_disconnect_function_invoke_arn
   update_websocket_information_function_invoke_arn = module.lambda.update_websocket_information_function_invoke_arn
   save_player_answer_function_invoke_arn           = module.lambda.save_player_answer_function_invoke_arn
+  join_game_session_function_invoke_arn            = module.lambda.join_game_session_function_invoke_arn
 }
 
 module "lambda" {

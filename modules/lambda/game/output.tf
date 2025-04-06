@@ -37,3 +37,8 @@ output "save_task_token_function_arn" {
   value       = aws_lambda_function.save_task_token.arn
   description = "ARN of the lambda function to save the task token of Wait for player answers state to DynamoDB"
 }
+
+output "join_game_session_function_invoke_arn" {
+  value       = aws_lambda_function.join_game_session.invoke_arn
+  description = "Invoke ARN of the lambda function for POST join game session"
+}
