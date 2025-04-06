@@ -13,7 +13,7 @@ game_sessions_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
 
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": f"https://{domain}",
-    "Access-Control-Allow-Methods": "GET, OPTIONS, HEAD",
+    "Access-Control-Allow-Methods": "PUT, OPTIONS, HEAD",
     "Access-Control-Allow-Headers": "*",
     "Access-Control-Allow-Credentials": "true"
 }
@@ -23,12 +23,9 @@ def lambda_handler(event, context):
 
     body = json.loads(event["body"])
 
-    #game_session_uuid = event["body"].get("game_session_uuid")
     game_session_uuid = body.get("game_session_uuid")
     user_uuid = body.get("user_uuid")
     nickname = body.get("nickname")
-    #user_uuid = event["body"].get("user_uuid")
-    #nickname = event["body"].get("nickname")
 
     if not game_session_uuid:
         logger.error("Missing game_session_uuid")

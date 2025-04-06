@@ -113,7 +113,7 @@ resource "aws_apigatewayv2_integration" "gateway_integration_join_game_session" 
   api_id             = aws_apigatewayv2_api.api_gateway.id
   integration_type   = "AWS_PROXY"
   connection_type    = "INTERNET"
-  description        = "POST endpoint for join game session"
+  description        = "PUT endpoint for join game session"
   integration_method = "POST"
   integration_uri    = var.join_game_session_function_invoke_arn
   response_parameters {
@@ -125,6 +125,6 @@ resource "aws_apigatewayv2_integration" "gateway_integration_join_game_session" 
 }
 resource "aws_apigatewayv2_route" "join_game_session_route" {
   api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "POST /game/join-game-session"
+  route_key = "PUT /game/join-game-session"
   target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_join_game_session.id}"
 }
