@@ -29,12 +29,16 @@ def lambda_handler(event, context):
 
     try:
         connection_endpoint = 'wss://' + event['requestContext']['domainName'] + '/' + event['requestContext']['stage']
+
+        token = event['queryStringParameters'].get('access_token', None)
+
         DYNAMODB_CLIENT.put_item(
             TableName=CONNECTION_TABLE_NAME,
             Item={
                 'connection_uuid': {'S': connection_id},
                 'connectionEndpoint': {'S': connection_endpoint},
-                'start_time': {'S': created_at}
+                'start_time': {'S': created_at},
+                'access_token': {'S': token} if token else {'NULL': True},
             })
         logger.info("Successfully added connection to connections table")
         return {
