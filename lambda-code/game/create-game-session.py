@@ -4,6 +4,7 @@ import uuid
 import datetime
 import logging
 import os
+import jwt
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -21,8 +22,16 @@ CORS_HEADERS = {
 }
 
 def lambda_handler(event, context):
+    logger.info(f"Received event: {json.dumps(event)}")
+
     try:
         body = json.loads(event["body"])
+        headers = event["headers"]
+
+        token = headers.get("authorization")
+        if not token:
+            return {"statusCode": 401, "body": json.dumps({"error": "Unauthorized"})}
+        logger.info(f"Token: {token}")
 
         created_by = body.get("created_by")
         session_uuid = str(uuid.uuid4())
@@ -46,7 +55,7 @@ def lambda_handler(event, context):
         }
 
     except Exception as e:
-        logger.error("Error saving the question: %s", str(e), exc_info=True)
+        logger.error("Error creating session: %s", str(e), exc_info=True)
         return {
             "statusCode": 500,
             "headers": CORS_HEADERS,
