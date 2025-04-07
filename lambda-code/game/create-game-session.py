@@ -4,7 +4,6 @@ import uuid
 import datetime
 import logging
 import os
-import jwt
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
