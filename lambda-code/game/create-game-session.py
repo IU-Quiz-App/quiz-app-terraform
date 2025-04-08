@@ -4,6 +4,7 @@ import uuid
 import datetime
 import logging
 import os
+import base64
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -25,38 +26,63 @@ def lambda_handler(event, context):
 
     try:
         body = json.loads(event["body"])
-        headers = event["headers"]
+        #headers = event["headers"]
 
-        token = headers.get("authorization")
-        if not token:
-            return {"statusCode": 401, "body": json.dumps({"error": "Unauthorized"})}
-        logger.info(f"Token: {token}")
+        #token = headers.get("authorization")
+        #if not token:
+        #    return {"statusCode": 401, "body": json.dumps({"error": "Unauthorized"})}
+        auth_header = event["headers"].get("authorization", "")
+        token = auth_header.split(" ")[1] if " " in auth_header else auth_header
+        payload = decode_jwt_payload(token)
 
-        created_by = body.get("created_by")
+        if not payload:
+            return response(401, {"error": "Invalid Token"})
+
+        user_uuid = payload.get("oid")
+        if not user_uuid:
+            return response(401, {"error": "Invalid Token: Missing oid"})
+
         session_uuid = str(uuid.uuid4())
-
-        if not created_by:
-            return {"statusCode": 400, "body": json.dumps({"error": "created_by is required"})}
-
+        nickname = payload.get("name", "").strip().split()[0] if payload.get("name") else None
+        if not nickname:
+            return response(400, {"error": "Invalid Token: Missing name"})
+        
         item = {
             "uuid": session_uuid,
-            "created_by": created_by,
+            "created_by": user_uuid,
             "created_at": datetime.datetime.now().isoformat(),
-            "users": ["Philipp", "Jannis", "Janna"]
+            "users": [{"user_uuid": user_uuid, "nickname": nickname}],
         }
 
         table.put_item(Item=item)
 
-        return {
-            "statusCode": 200,
-            "headers": CORS_HEADERS,
-            "body": json.dumps({"message": "Session successfully created!", "session": item})
-        }
+        logger.info(f"Session created successfully: {item}")
+
+        return response(200, {"message": "Session successfully created!", "session": item})
 
     except Exception as e:
         logger.error("Error creating session: %s", str(e), exc_info=True)
-        return {
-            "statusCode": 500,
-            "headers": CORS_HEADERS,
-            "body": json.dumps({"error": str(e)})
-        }
+        return response(500, {"error": str(e)})
+    
+
+def decode_jwt_payload(token):
+    try:
+        parts = token.split('.')
+        if len(parts) != 3:
+            raise ValueError("Invalid JWT format")
+
+        payload_b64 = parts[1]
+        padding = '=' * (-len(payload_b64) % 4)
+        payload_b64 += padding
+
+        payload_bytes = base64.urlsafe_b64decode(payload_b64)
+        payload = json.loads(payload_bytes)
+
+        return payload
+
+    except Exception as e:
+        logger.error("Failed to decode JWT payload: %s", str(e))
+        return None
+    
+def response(status_code, body):
+    return {"statusCode": status_code, "headers": CORS_HEADERS, "body": json.dumps(body)}
