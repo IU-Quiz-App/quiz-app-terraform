@@ -13,7 +13,7 @@ table = dynamodb.Table(f"iu-quiz-questions-{stage}")
 
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": f"https://{domain}",
-    "Access-Control-Allow-Methods": "GET, OPTIONS, HEAD",
+    "Access-Control-Allow-Methods": "DELETE, OPTIONS, HEAD",
     "Access-Control-Allow-Headers": "*",
     "Access-Control-Allow-Credentials": "true"
 }

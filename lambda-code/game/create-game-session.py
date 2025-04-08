@@ -26,11 +26,7 @@ def lambda_handler(event, context):
 
     try:
         body = json.loads(event["body"])
-        #headers = event["headers"]
 
-        #token = headers.get("authorization")
-        #if not token:
-        #    return {"statusCode": 401, "body": json.dumps({"error": "Unauthorized"})}
         auth_header = event["headers"].get("authorization", "")
         token = auth_header.split(" ")[1] if " " in auth_header else auth_header
         payload = decode_jwt_payload(token)

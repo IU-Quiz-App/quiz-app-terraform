@@ -2,6 +2,7 @@ import json
 import boto3
 import logging
 import os
+import base64
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -24,18 +25,28 @@ def lambda_handler(event, context):
     body = json.loads(event["body"])
 
     game_session_uuid = body.get("game_session_uuid")
-    user_uuid = body.get("user_uuid")
     nickname = body.get("nickname")
 
     if not game_session_uuid:
         logger.error("Missing game_session_uuid")
         return response(400, {"error": "Missing game_session_uuid"})
-    if not user_uuid:
-        logger.error("Missing user_uuid")
-        return response(400, {"error": "Missing user_uuid"})
     if not nickname:
         logger.error("Missing nickname")
         return response(400, {"error": "Missing nickname"})
+    
+    auth_header = event["headers"].get("authorization", "")
+    token = auth_header.split(" ")[1] if " " in auth_header else auth_header
+    payload = decode_jwt_payload(token)
+    if not payload:
+        return response(401, {"error": "Invalid Token"})
+    
+    user_uuid = payload.get("oid")
+    if not user_uuid:
+        return response(401, {"error": "Invalid Token: Missing oid"})
+    
+    nickname = payload.get("name", "").strip().split()[0] if payload.get("name") else None
+    if not nickname:
+        return response(400, {"error": "Invalid Token: Missing name"})
     
     new_user = {"user_uuid": user_uuid, "nickname": nickname}
     
@@ -61,7 +72,25 @@ def lambda_handler(event, context):
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         return response(500, {"error": str(e)})
+    
+def decode_jwt_payload(token):
+    try:
+        parts = token.split('.')
+        if len(parts) != 3:
+            raise ValueError("Invalid JWT format")
 
+        payload_b64 = parts[1]
+        padding = '=' * (-len(payload_b64) % 4)
+        payload_b64 += padding
+
+        payload_bytes = base64.urlsafe_b64decode(payload_b64)
+        payload = json.loads(payload_bytes)
+
+        return payload
+
+    except Exception as e:
+        logger.error("Failed to decode JWT payload: %s", str(e))
+        return None
 
 def response(status_code, body):
     return {"statusCode": status_code, "headers": CORS_HEADERS, "body": json.dumps(body)}
