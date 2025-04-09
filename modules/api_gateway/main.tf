@@ -51,6 +51,17 @@ resource "aws_apigatewayv2_api_mapping" "api_mapping" {
   stage       = var.stage
 }
 
+resource "aws_apigatewayv2_authorizer" "api_gateway_authorizer" {
+  name             = "api-gateway-authorizer-${var.stage}"
+  api_id           = aws_apigatewayv2_api.api_gateway.id
+  authorizer_type  = "JWT"
+  identity_sources = ["$request.header.Authorization"]
+  jwt_configuration {
+    audience = ["6118d90d-5469-4c28-9bed-668c44ef16a7"]
+    issuer   = "https://login.microsoftonline.com/c630d2a3-948c-402d-93ca-0060609c152e/v2.0"
+  }
+}
+
 #Websocket API
 resource "aws_apigatewayv2_api" "websocket_api_gateway" {
   name                       = "iu-quiz-websocket-api-${var.stage}"

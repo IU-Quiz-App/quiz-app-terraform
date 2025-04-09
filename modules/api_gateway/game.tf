@@ -15,9 +15,11 @@ resource "aws_apigatewayv2_integration" "gateway_integration_create_game_session
 }
 
 resource "aws_apigatewayv2_route" "create_game_session_route" {
-  api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "POST /game/create-game-session"
-  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_create_game_session.id}"
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  route_key          = "POST /game/create-game-session"
+  target             = "integrations/${aws_apigatewayv2_integration.gateway_integration_create_game_session.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_gateway_authorizer.id
 }
 
 # get game session

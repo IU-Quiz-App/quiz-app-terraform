@@ -31,7 +31,8 @@ def lambda_handler(event, context):
 
         response = table.delete_item(
             Key={"uuid": uuid},
-            ConditionExpression="attribute_exists(uuid)"
+            ConditionExpression="attribute_exists(#uuid)",
+            ExpressionAttributeNames={"#uuid": "uuid"}
         )
 
         logger.info("Deleted question: %s", response)
