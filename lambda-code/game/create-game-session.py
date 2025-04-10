@@ -25,8 +25,6 @@ def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
 
     try:
-        body = json.loads(event["body"])
-
         auth_header = event["headers"].get("authorization", "")
         token = auth_header.split(" ")[1] if " " in auth_header else auth_header
         payload = decode_jwt_payload(token)
