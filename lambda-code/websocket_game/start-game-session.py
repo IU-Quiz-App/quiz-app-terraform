@@ -5,6 +5,7 @@ import datetime
 import logging
 import os
 import random
+import base64
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -18,6 +19,7 @@ dynamodb = boto3.resource("dynamodb")
 game_session_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
 question_table = dynamodb.Table(f"iu-quiz-questions-{stage}")
 game_answers_table = dynamodb.Table(f"iu-quiz-game-answers-{stage}")
+websocket_connections_table = dynamodb.Table(f"websocket-connections-{stage}")
 
 stepfunctions = boto3.client("stepfunctions")
 lambda_client = boto3.client("lambda")
@@ -32,6 +34,22 @@ def lambda_handler(event, context):
     body = json.loads(event["body"])
 
     logger.info(f"websocket_api_endpoint: {websocket_api_endpoint}")
+
+    connection_uuid = event["requestContext"]["connectionId"]
+    connection = get_websocket_connection(connection_uuid)
+
+    if not connection:
+        logger.error(f"Connection {connection_uuid} not found")
+        return response(400, {"error": "Connection not found"})
+
+    token = connection.get("access_token")
+    if not token:
+        logger.error("Missing access_token")
+        return response(401, {"error": "Missing access_token"})
+
+    jwt_payload = decode_jwt_payload(token)
+    if not jwt_payload:
+        return response(401, {"error": "Invalid Token"})
 
     default_response_time = 5
 
@@ -66,6 +84,29 @@ def lambda_handler(event, context):
         return
 
     try:
+        user_uuid = jwt_payload.get("oid")
+        logger.info(f"user_uuid: {user_uuid}")
+
+        response = game_session_table.query(
+            IndexName="uuid_index",
+            KeyConditionExpression="#uuid = :question_uuid",
+            ExpressionAttributeNames={
+                "#uuid": "uuid"
+            },
+            ExpressionAttributeValues={
+                ":question_uuid": game_session_uuid
+            }
+        )
+
+        game_session = response.get("Items")[0]
+        logger.info("Got session: %s", game_session)
+
+        created_by = game_session.get('created_by')
+        logger.info(f"created_by: {created_by}")
+        if (created_by != user_uuid):
+            logger.error("User not authorized to start this game session")
+            send_error_response(connection_id, "User not authorized to start this game session")
+            return
 
         questions = get_public_questions(course_name)
         logger.info("Got questions: %s", questions)
@@ -103,19 +144,7 @@ def lambda_handler(event, context):
                 ":current_question": 0}
         )
 
-        game_session = game_session_table.query(
-            IndexName="uuid_index",
-            KeyConditionExpression="#uuid = :question_uuid",
-            ExpressionAttributeNames={
-                "#uuid": "uuid"
-            },
-            ExpressionAttributeValues={
-                ":question_uuid": game_session_uuid
-            }
-        )
-        logger.info("Got session: %s", game_session)
-
-        users = game_session.get("Items")[0].get("users")
+        users = game_session.get("users")
         logger.info("Users: %s", users)
 
         for question in questions_for_quiz:
@@ -133,7 +162,7 @@ def lambda_handler(event, context):
                     "uuid": str(uuid.uuid4()),
                     "game_session_uuid": game_session_uuid,
                     "question_uuid": question["uuid"],
-                    "user_uuid": user,
+                    "user_uuid": user["user_uuid"],
                     "answer": "",
                     "correct_answer": correct_answer,
                     "timed_out": "",
@@ -170,7 +199,7 @@ def lambda_handler(event, context):
         }
 
     except Exception as e:
-        logger.error("Error saving the question: %s", str(e), exc_info=True)
+        logger.error("Error starting the session: %s", str(e), exc_info=True)
         return {
             "statusCode": 500,
             "body": json.dumps({"error": str(e)})
@@ -191,6 +220,26 @@ def get_public_questions(course_name):
     )
     return response.get("Items", [])
 
+def decode_jwt_payload(token):
+    token = token.replace("Bearer ", "")
+    try:
+        parts = token.split('.')
+        if len(parts) != 3:
+            raise ValueError("Invalid JWT format")
+
+        payload_b64 = parts[1]
+        padding = '=' * (-len(payload_b64) % 4)
+        payload_b64 += padding
+
+        payload_bytes = base64.urlsafe_b64decode(payload_b64)
+        payload = json.loads(payload_bytes)
+
+        return payload
+
+    except Exception as e:
+        logger.error("Failed to decode JWT payload: %s", str(e))
+        return None
+
 def send_error_response(connection_id, error_message):
     logger.info(f"Sending error response to connection {connection_id}: {error_message}")
     try:
@@ -204,3 +253,15 @@ def send_error_response(connection_id, error_message):
         logger.info(f"Error response sent to connection {connection_id}")
     except Exception as e:
         logger.error(f"Error sending error response: {str(e)}")
+
+def get_websocket_connection(connection_id):
+    try:
+        response = websocket_connections_table.get_item(
+            Key={
+                "connection_uuid": connection_id
+            }
+        )
+        return response.get("Item")
+    except Exception as e:
+        logger.error(f"Error getting websocket connection: {str(e)}")
+        return None
