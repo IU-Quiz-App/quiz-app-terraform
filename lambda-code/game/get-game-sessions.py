@@ -27,6 +27,20 @@ def lambda_handler(event, context):
         page = int(event["queryStringParameters"].get("page", 1))
         page_size = int(event["queryStringParameters"].get("page_size", 10))
 
+        # Query to get the total count of all matching items
+        total_count_response = table.query(
+            IndexName = "user_sessions_index",
+            KeyConditionExpression = "#created_by = :user_id",
+            ExpressionAttributeNames = {
+                "#created_by": "created_by"
+            },
+            ExpressionAttributeValues = {
+                ":user_id": user_id
+            },
+            Select="COUNT"
+        )
+        total_items = total_count_response.get("Count", 0)
+
         query_params = {
             "IndexName": "user_sessions_index",
             "KeyConditionExpression": "#created_by = :user_id",
@@ -60,7 +74,10 @@ def lambda_handler(event, context):
         return {
             "statusCode": 200,
             "headers": CORS_HEADERS,
-            "body": json.dumps(items, default=decimal_converter)
+            "body": json.dumps({
+                "items": items,
+                "total_items": total_items
+            }, default=decimal_converter)
         }
 
     except Exception as e:

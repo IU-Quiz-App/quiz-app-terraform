@@ -26,6 +26,21 @@ def lambda_handler(event, context):
         page = int(event["queryStringParameters"].get("page", 1))
         page_size = int(event["queryStringParameters"].get("page_size", 10))
 
+        # Query to get the total count of all matching items
+        total_count_response = table.query(
+            IndexName="user_questions_index",
+            KeyConditionExpression="#created_by = :user_id",
+            ExpressionAttributeNames={
+                "#created_by": "created_by"
+            },
+            ExpressionAttributeValues={
+                ":user_id": user_id
+            },
+            Select="COUNT"
+        )
+        total_items = total_count_response.get("Count", 0)
+
+        # Query to get the paginated items
         query_params = {
             "IndexName": "user_questions_index",
             "KeyConditionExpression": "#created_by = :user_id",
@@ -38,9 +53,7 @@ def lambda_handler(event, context):
             "Limit": page_size
         }
 
-        # Calculate the ExclusiveStartKey based on the page number
         if page > 1:
-            start_key = None
             for _ in range(page - 1):
                 response = table.query(**query_params)
                 start_key = response.get("LastEvaluatedKey")
@@ -61,6 +74,7 @@ def lambda_handler(event, context):
             "headers": CORS_HEADERS,
             "body": json.dumps({
                 "items": items,
+                "total_items": total_items
             })
         }
 
