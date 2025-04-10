@@ -23,14 +23,24 @@ def lambda_handler(event, context):
         logger.info("Event: %s", event)
 
         uuid = event["pathParameters"].get("uuid")
+        course = event["queryStringParameters"].get("course")
 
         if not uuid:
             raise ValueError("UUID is required")
+        if not course:
+            raise ValueError("Course is required")
 
         logger.info("Deleting question with uuid: %s", uuid)
 
+        item = table.get_item(
+            Key={"uuid": uuid, "course": course},
+        )
+
+        if "Item" not in item:
+            raise ValueError(f"No question found for UUID: {uuid}")
+
         response = table.delete_item(
-            Key={"uuid": uuid},
+            Key={"uuid": uuid, "course": course},
             ConditionExpression="attribute_exists(#uuid)",
             ExpressionAttributeNames={"#uuid": "uuid"}
         )
