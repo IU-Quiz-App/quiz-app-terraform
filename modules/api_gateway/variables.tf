@@ -92,3 +92,8 @@ variable "join_game_session_function_invoke_arn" {
   description = "Invoke ARN of the lambda function for POST join game session"
   type        = string
 }
+
+variable "get_ephemeral_token_function_invoke_arn" {
+  description = "Invoke ARN of the lambda function for GET ephemeral token"
+  type        = string
+}

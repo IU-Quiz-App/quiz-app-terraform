@@ -1,4 +1,4 @@
-resource "aws_dynamodb_table" "websocket_connections" {
+resource "aws_dynamodb_table" "ephemeral_tokens" {
   name         = "ephemeral-tokens-${var.stage}"
   billing_mode = "PAY_PER_REQUEST"
 
@@ -7,5 +7,10 @@ resource "aws_dynamodb_table" "websocket_connections" {
   attribute {
     name = "token"
     type = "S"
+  }
+
+  ttl {
+    attribute_name = "expiresAt"
+    enabled        = true
   }
 }
