@@ -107,3 +107,8 @@ output "join_game_session_function_invoke_arn" {
   value       = module.game.join_game_session_function_invoke_arn
   description = "Invoke ARN of the lambda function for POST join game session"
 }
+
+output "get_ephemeral_token_function_invoke_arn" {
+  value       = module.authorization.get_ephemeral_token_function_invoke_arn
+  description = "Invoke ARN of the lambda function for GET ephemeral token"
+}

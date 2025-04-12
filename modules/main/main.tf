@@ -31,6 +31,7 @@ module "api_gateway" {
   update_websocket_information_function_invoke_arn = module.lambda.update_websocket_information_function_invoke_arn
   save_player_answer_function_invoke_arn           = module.lambda.save_player_answer_function_invoke_arn
   join_game_session_function_invoke_arn            = module.lambda.join_game_session_function_invoke_arn
+  get_ephemeral_token_function_invoke_arn          = module.lambda.get_ephemeral_token_function_invoke_arn
 }
 
 module "lambda" {
