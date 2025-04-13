@@ -16,7 +16,7 @@ resource "aws_sfn_state_machine" "game_state_machine" {
         "current_question_index": "{% 0 %}",
         "wait_until_game_starts_seconds": "{% 5 %}",
         "wait_until_answer_is_shown_seconds": "{% 3 %}",
-        "wait_let_players_check_correct_answer_seconds": "{% 15 %}",
+        "wait_let_players_check_correct_answer_seconds": "{% 5 %}",
         "wait_until_next_question_seconds": "{% 5 %}",
         "wait_until_results_are_sent_seconds": "{% 5 %}",
         "question_response_time_seconds": "{% $states.input.question_response_time %}"
