@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     connection_id = event['requestContext']['connectionId']
 
     logger.info("Check if ephemeral token is valid")
-    token = event['queryStringParameters'].get('access_token', None)
+    token = event['queryStringParameters'].get('token', None)
     if token is None:
         logger.error("Token is missing")
         return response(401, {"error": "Unauthorized because token was not found"})
@@ -47,10 +47,13 @@ def lambda_handler(event, context):
         if ephemeral_token['Item']['used']['BOOL'] == True:
             logger.error(f"Token {ephemeral_token} already used")
             return response(401, {"error": "Unauthorized because token was already used"})
-        if int(ephemeral_token['Item']['expiresAt']['N']) < int(datetime.datetime.now().timestamp()):
+        if int(ephemeral_token['Item']['expires_at']['N']) < int(datetime.datetime.now().timestamp()):
             logger.error(f"Token {ephemeral_token} expired")
             return response(401, {"error": "Unauthorized because token was expired"})
         logger.info("Token is valid, updating token to used")
+
+        access_token = ephemeral_token['Item']['access_token']['S']
+        logger.info(f"Access token: {access_token}")
 
         DYNAMODB_CLIENT.update_item(
             TableName=TOKEN_TABLE_NAME,
@@ -63,28 +66,31 @@ def lambda_handler(event, context):
             }
         )
         logger.info("Token updated to used")
+
+        try:
+            logger.info("Adding connection to connections table")
+
+            created_at = datetime.datetime.now().isoformat()
+            connection_endpoint = 'wss://' + event['requestContext']['domainName'] + '/' + event['requestContext'][
+                'stage']
+
+            DYNAMODB_CLIENT.put_item(
+                TableName=CONNECTION_TABLE_NAME,
+                Item={
+                    'connection_uuid': {'S': connection_id},
+                    'connectionEndpoint': {'S': connection_endpoint},
+                    'start_time': {'S': created_at},
+                    'access_token': {'S': access_token},
+                })
+            logger.info("Successfully added connection to connections table")
+            return response(200, {"message": "Connected successfully"})
+
+        except Exception as e:
+            logger.error("Error saving the connection: %s", str(e), exc_info=True)
+            return response(500, {"error": str(e)})
+
     except Exception as e:
         logger.error("Error checking token: %s", str(e), exc_info=True)
-        return response(500, {"error": str(e)})
-    
-    try:
-        logger.info("Adding connection to connections table")
-
-        created_at = datetime.datetime.now().isoformat()
-        connection_endpoint = 'wss://' + event['requestContext']['domainName'] + '/' + event['requestContext']['stage']
-
-        DYNAMODB_CLIENT.put_item(
-            TableName=CONNECTION_TABLE_NAME,
-            Item={
-                'connection_uuid': {'S': connection_id},
-                'connectionEndpoint': {'S': connection_endpoint},
-                'start_time': {'S': created_at}
-            })
-        logger.info("Successfully added connection to connections table")
-        return response(200, {"message": "Connected successfully"})
-    
-    except Exception as e:
-        logger.error("Error saving the answer: %s", str(e), exc_info=True)
         return response(500, {"error": str(e)})
     
 def response(status_code, body):

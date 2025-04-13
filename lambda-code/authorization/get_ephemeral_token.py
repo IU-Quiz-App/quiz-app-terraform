@@ -28,10 +28,16 @@ def lambda_handler(event, context):
     token = secrets.token_urlsafe(16)  # 128-bit token
     expiration = int(time.time()) + 60  # 1-minute expiry
 
+    access_token = event["headers"].get("authorization", "")
+
+    if not access_token:
+        return response(401, {"error": "Invalid access token."})
+
     item = {
         'token': token,
-        'expiresAt': expiration,
+        'expires_at': expiration,
         'used': False,
+        'access_token': access_token,
     }
     logger.info(f"Generated item to store: {item}")
 
