@@ -36,28 +36,35 @@ def lambda_handler(event, context):
 
         body = json.loads(event["body"])
 
-        for answer in body["answers"]:
-            answer["uuid"] = str(uuid.uuid4())
+        for item in body["items"]:
+            try:
+                for answer in item["answers"]:
+                    answer["uuid"] = str(uuid.uuid4())
 
-        item = {
-            "course": body["course"],
-            "uuid": str(uuid.uuid4()),
-            "text": body["text"],
-            "answers": body["answers"],
-            "created_by": user_id,
-            "public": "true" if body.get("public", False) else "false",
-            "status": body.get("status", "created"),
-            "created_at": datetime.datetime.now().isoformat()
-        }
+                item = {
+                    "course": item["course"],
+                    "uuid": str(uuid.uuid4()),
+                    "text": item["text"],
+                    "answers": item["answers"],
+                    "created_by": user_id,
+                    "public": "true" if item.get("public", False) else "false",
+                    "status": item.get("status", "created"),
+                    "created_at": datetime.datetime.now().isoformat()
+                }
 
-        logger.info("Question item written to the database: %s", json.dumps(item, indent=2))
+                logger.info("Question item written to the database: %s", json.dumps(item, indent=2))
 
-        table.put_item(Item=item)
+                table.put_item(Item=item)
+
+            except Exception as e:
+                logger.error("Error saving question item: %s", str(e))
+                continue
+
         
         return {
             "statusCode": 200,
             "headers": CORS_HEADERS,
-            "body": json.dumps({"message": "Frage erfolgreich gespeichert!", "question": item})
+            "body": json.dumps({"message": "Erfolgreich gespeichert!"})
         }
     
     except Exception as e:
