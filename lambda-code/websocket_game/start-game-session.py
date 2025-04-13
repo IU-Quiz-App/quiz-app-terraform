@@ -35,25 +35,24 @@ def lambda_handler(event, context):
 
     logger.info(f"websocket_api_endpoint: {websocket_api_endpoint}")
 
-    connection_uuid = event["requestContext"]["connectionId"]
-    connection = get_websocket_connection(connection_uuid)
+    connection_id = event["requestContext"]["connectionId"]
+    connection = get_websocket_connection(connection_id)
 
     if not connection:
-        logger.error(f"Connection {connection_uuid} not found")
-        return response(400, {"error": "Connection not found"})
+        logger.error(f"Connection {connection_id} not found")
+        return ws_response(connection_id, {"error": "Connection not found"})
 
     token = connection.get("access_token")
     if not token:
         logger.error("Missing access_token")
-        return response(401, {"error": "Missing access_token"})
+        return ws_response(connection_id, {"error": "Missing access_token"})
 
     jwt_payload = decode_jwt_payload(token)
     if not jwt_payload:
-        return response(401, {"error": "Invalid Token"})
+        logger.error("Invalid JWT payload")
+        return ws_response(connection_id, {"error": "Invalid Token"})
 
     default_response_time = 5
-
-    connection_id = event["requestContext"]["connectionId"]
 
     game_session_uuid = body.get("game_session_uuid")
     course_name = body.get("course_name")
@@ -62,25 +61,25 @@ def lambda_handler(event, context):
 
     if not game_session_uuid:
         logger.error("Missing game_session_uuid")
-        send_error_response(connection_id, "Missing game_session_uuid")
+        ws_response(connection_id, {"error": "Missing game_session_uuid"})
         return
     if not course_name:
         logger.error("Missing course_name")
-        send_error_response(connection_id, "Missing course_name")
+        ws_response(connection_id, {"error": "Missing course_name"})
         return
     if not quiz_length:
         logger.error("Missing quiz_length")
-        send_error_response(connection_id, "Missing quiz_length")
+        ws_response(connection_id, {"error": "Missing quiz_length"})
         return
     if "question_response_time" not in body:
         logger.error(f"Missing question_response_time, set to default {default_response_time}")
-        send_error_response(connection_id, f"Missing question_response_time, set to default {default_response_time}")
+        ws_response(connection_id, {"error": f"Missing question_response_time, set to default {default_response_time}"})
         
     try:
         quiz_length = int(quiz_length)
     except ValueError:
         logger.error("quiz_length must be an integer")
-        send_error_response(connection_id, "quiz_length must be an integer")
+        ws_response(connection_id, {"error": "quiz_length must be an integer"})
         return
 
     try:
@@ -105,7 +104,7 @@ def lambda_handler(event, context):
         logger.info(f"created_by: {created_by}")
         if (created_by != user_uuid):
             logger.error("User not authorized to start this game session")
-            send_error_response(connection_id, "User not authorized to start this game session")
+            ws_response(connection_id, {"error": "User not authorized to start this game session"})
             return
 
         questions = get_public_questions(course_name)
@@ -113,8 +112,7 @@ def lambda_handler(event, context):
 
         # Check if questions are less than quiz_length
         if len(questions) < quiz_length:
-            logger.error(f"Not enough questions available for quiz length {quiz_length}")
-            send_error_response(connection_id, f"Not enough questions available for quiz length {quiz_length}")
+            ws_response(connection_id, {"action": "not-enough-questions"})
             return
         
         # Provide random questions for the quiz based on quiz_length
@@ -193,17 +191,8 @@ def lambda_handler(event, context):
 
         logger.info(f"Step function started: {response}")
 
-        return {
-            "statusCode": 200,
-            "body": json.dumps({"message": "Game started!", "session_uuid": game_session_uuid})
-        }
-
     except Exception as e:
         logger.error("Error starting the session: %s", str(e), exc_info=True)
-        return {
-            "statusCode": 500,
-            "body": json.dumps({"error": str(e)})
-        }
     
 def get_public_questions(course_name):
     response = question_table.query(
@@ -240,19 +229,17 @@ def decode_jwt_payload(token):
         logger.error("Failed to decode JWT payload: %s", str(e))
         return None
 
-def send_error_response(connection_id, error_message):
-    logger.info(f"Sending error response to connection {connection_id}: {error_message}")
+def ws_response(connection_id, data):
+    logger.info(f"Sending response to connection {connection_id}: {data}")
     try:
         response = apigateway_management.post_to_connection(
             ConnectionId=connection_id,
-            Data=json.dumps({
-                "error": error_message
-            })
+            Data=json.dumps(data)
         )
         logger.info(f"Response: {response}")
-        logger.info(f"Error response sent to connection {connection_id}")
+        logger.info(f"Response sent to connection {connection_id}")
     except Exception as e:
-        logger.error(f"Error sending error response: {str(e)}")
+        logger.error(f"Error sending response: {str(e)}")
 
 def get_websocket_connection(connection_id):
     try:
