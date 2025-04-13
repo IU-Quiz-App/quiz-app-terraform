@@ -32,19 +32,34 @@ def lambda_handler(event, context):
             Key={"uuid": uuid}
         )
 
-        item = response.get('Item')
+        game_session = response.get('Item')
 
-        logger.info("Got item: %s", item)
+        logger.info("Got item: %s", game_session)
 
-        if item.get("ended_at"):
+        if game_session.get("ended_at"):
             users_answers = get_all_answers_of_session(uuid)
-            item["users_answers"] = users_answers
+            logger.info("Got answers: %s", users_answers)
+
+            questions = []
+
+            for question in game_session.get("questions", []):
+                logger.info("Getting answers for question: %s", question)
+                answers = []
+                for answer in question.get("answers", []):
+                    logger.info("Getting answers for answer: %s", answer)
+                    answer["user_answers"] = [ua for ua in users_answers if ua["answer"] == answer["uuid"] and ua["question_uuid"] == question["uuid"]]
+                    answers.append(answer)
+                question["answers"] = answers
+                logger.info("Got answers for question: %s", question)
+                question['timed_out_answers'] = [ua for ua in users_answers if ua["question_uuid"] == question["uuid"] and ua["timed_out"] == "true"]
+                questions.append(question)
+            game_session["questions"] = questions
 
 
         return {
             "statusCode": 200,
             "headers": CORS_HEADERS,
-            "body": json.dumps(item, default=decimal_converter)
+            "body": json.dumps(game_session, default=decimal_converter)
         }
 
     except Exception as e:
