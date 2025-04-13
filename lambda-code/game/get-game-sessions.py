@@ -48,6 +48,7 @@ def lambda_handler(event, context):
             ExpressionAttributeValues = {
                 ":user_id": user_id
             },
+            FilterExpression = "attribute_exists(started_at)",
             Select="COUNT"
         )
         total_items = total_count_response.get("Count", 0)
@@ -61,6 +62,7 @@ def lambda_handler(event, context):
             "ExpressionAttributeValues": {
                 ":user_id": user_id
             },
+            "FilterExpression": "attribute_exists(started_at)",
             "Limit": page_size
         }
 
