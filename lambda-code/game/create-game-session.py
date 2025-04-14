@@ -12,7 +12,8 @@ logger = logging.getLogger()
 stage = os.environ.get('STAGE')
 domain = os.environ.get('DOMAIN')
 dynamodb = boto3.resource("dynamodb")
-table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
+game_sessions_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
+user_game_sessions_table = dynamodb.Table(f"iu-quiz-user-game-sessions-{stage}")
 
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": f"https://{domain}",
@@ -39,17 +40,29 @@ def lambda_handler(event, context):
         nickname = payload.get("name", "").strip().split()[0] if payload.get("name") else None
         if not nickname:
             return response(400, {"error": "Invalid Token: Missing name"})
-        
+
+        created_at = datetime.datetime.now().isoformat()
+
         item = {
             "uuid": session_uuid,
             "created_by": user_uuid,
-            "created_at": datetime.datetime.now().isoformat(),
+            "created_at": created_at,
             "users": [{"user_uuid": user_uuid, "nickname": nickname}],
         }
 
-        table.put_item(Item=item)
+        game_sessions_table.put_item(Item=item)
 
         logger.info(f"Session created successfully: {item}")
+
+        user_game_sessions_table.put_item(
+            Item={
+                "user_uuid": user_uuid,
+                "game_session_uuid": session_uuid,
+                "created_by": user_uuid,
+                "created_at": created_at,
+            }
+        )
+        logger.info(f"User game session created successfully: {user_uuid} - {session_uuid}")
 
         return response(200, {"message": "Session successfully created!", "session": item})
 

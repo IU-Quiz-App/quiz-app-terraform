@@ -17,6 +17,7 @@ websocket_api_endpoint = f"{websocket_wss_api_endpoint.replace('wss', 'https')}/
 
 dynamodb = boto3.resource("dynamodb")
 game_session_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
+user_game_sessions_table = dynamodb.Table(f"iu-quiz-user-game-sessions-{stage}")
 question_table = dynamodb.Table(f"iu-quiz-questions-{stage}")
 game_answers_table = dynamodb.Table(f"iu-quiz-game-answers-{stage}")
 websocket_connections_table = dynamodb.Table(f"websocket-connections-{stage}")
@@ -142,6 +143,8 @@ def lambda_handler(event, context):
                 ":current_question": 0}
         )
 
+        update_user_game_sessions(game_session_uuid, started_at)
+
         users = game_session.get("users")
         logger.info("Users: %s", users)
 
@@ -252,3 +255,31 @@ def get_websocket_connection(connection_id):
     except Exception as e:
         logger.error(f"Error getting websocket connection: {str(e)}")
         return None
+
+
+def update_user_game_sessions(game_session_uuid, started_at):
+    try:
+        # Query the table to get all items with the specified game_session_uuid
+        response = user_game_sessions_table.query(
+            KeyConditionExpression="#game_session_uuid = :game_session_uuid",
+            ExpressionAttributeNames={
+                "#game_session_uuid": "game_session_uuid"
+            },
+            ExpressionAttributeValues={
+                ":game_session_uuid": game_session_uuid
+            }
+        )
+        items = response.get("Items", [])
+
+        # Update each item with the started_at attribute
+        for item in items:
+            user_uuid = item["user_uuid"]
+            user_game_sessions_table.update_item(
+                Key={"user_uuid": user_uuid, "game_session_uuid": game_session_uuid},
+                UpdateExpression="SET started_at = :started_at",
+                ExpressionAttributeValues={":started_at": started_at}
+            )
+            logger.info(f"Updated item: {game_session_uuid} for user: {user_uuid} with started_at: {started_at}")
+
+    except Exception as e:
+        logger.error(f"Error updating user game sessions: {str(e)}", exc_info=True)

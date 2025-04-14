@@ -11,6 +11,7 @@ stage = os.environ.get('STAGE')
 domain = os.environ.get('DOMAIN')
 dynamodb = boto3.resource("dynamodb")
 game_sessions_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
+user_game_sessions_table = dynamodb.Table(f"iu-quiz-user-game-sessions-{stage}")
 lambda_client = boto3.client("lambda")
 
 CORS_HEADERS = {
@@ -76,6 +77,16 @@ def lambda_handler(event, context):
                 "#users": "users"
             }
         )
+
+        user_game_sessions_table.put_item(
+            Item={
+                "user_uuid": user_uuid,
+                "game_session_uuid": game_session_uuid,
+                "created_by": game_session.get("created_by"),
+                "created_at": game_session.get("created_at"),
+            }
+        )
+        logger.info(f"User game session created successfully: {user_uuid} - {game_session_uuid}")
 
         update_game_session_response = lambda_client.invoke(
             FunctionName=f"send_updated_game_session_{stage}",

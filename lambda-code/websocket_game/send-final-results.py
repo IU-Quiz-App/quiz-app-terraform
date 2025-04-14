@@ -15,6 +15,7 @@ dynamodb = boto3.resource("dynamodb")
 game_session_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
 websocket_connections_table = dynamodb.Table(f"websocket-connections-{stage}")
 game_answers_table = dynamodb.Table(f"iu-quiz-game-answers-{stage}")
+user_game_sessions_table = dynamodb.Table(f"iu-quiz-user-game-sessions-{stage}")
 lambda_client = boto3.client("lambda")
 
 apigateway_management = boto3.client(
@@ -42,6 +43,8 @@ def lambda_handler(event, context):
             }
         )
 
+        update_user_game_sessions(game_session_uuid, ended_at)
+
         update_game_session_response = lambda_client.invoke(
             FunctionName=f"send_updated_game_session_{stage}",
             InvocationType="Event",
@@ -60,3 +63,28 @@ def lambda_handler(event, context):
 
 def response(status_code, body):
     return {"statusCode": status_code, "body": body}
+
+def update_user_game_sessions(game_session_uuid, ended_at):
+    try:
+        response = user_game_sessions_table.query(
+            KeyConditionExpression="#game_session_uuid = :game_session_uuid",
+            ExpressionAttributeNames={
+                "#game_session_uuid": "game_session_uuid"
+            },
+            ExpressionAttributeValues={
+                ":game_session_uuid": game_session_uuid
+            }
+        )
+        items = response.get("Items", [])
+
+        for item in items:
+            user_uuid = item["user_uuid"]
+            user_game_sessions_table.update_item(
+                Key={"user_uuid": user_uuid, "game_session_uuid": game_session_uuid},
+                UpdateExpression="SET ended_at = :ended_at",
+                ExpressionAttributeValues={":ended_at": ended_at}
+            )
+            logger.info(f"Updated item: {game_session_uuid} for user: {user_uuid} with ended_at: {ended_at}")
+
+    except Exception as e:
+        logger.error(f"Error updating user game sessions: {str(e)}", exc_info=True)
