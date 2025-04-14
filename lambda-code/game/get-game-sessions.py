@@ -40,44 +40,14 @@ def lambda_handler(event, context):
         page = int(event["queryStringParameters"].get("page", 1))
         page_size = int(event["queryStringParameters"].get("page_size", 10))
 
-
-
         response = get_users_sessions(user_id, page, page_size)
 
         logger.info("Got sessions: %s", response)
         items = response.get("items", [])
 
-
-
         total_items = response.get("total_count", 0)
 
-        game_sessions = []
-
-        for item in items:
-            try:
-                game_session_uuid = item.get("game_session_uuid")
-                if not game_session_uuid:
-                    logger.error("Game session uuid not found in item: %s", item)
-                    continue
-
-                result = lambda_client.invoke(
-                    FunctionName=f"get_game_session_{stage}",
-                    InvocationType="RequestResponse",
-                    Payload=json.dumps({"pathParameters": {"uuid": game_session_uuid}})
-                )
-
-                logger.info(f"Payload: {result}")
-                body = json.loads(result["Payload"].read()).get("body")
-                game_session_item = json.loads(body)
-
-                if not game_session_item:
-                    logger.error("Game session with uuid %s not found", game_session_uuid)
-                    continue
-
-                game_sessions.append(game_session_item)
-            except Exception as e:
-                logger.error("Error getting game session: %s", str(e), exc_info=True)
-                continue
+        game_sessions = fetch_game_sessions(items)
 
         logger.info("Got items: %s", items)
 
@@ -97,6 +67,36 @@ def lambda_handler(event, context):
             "headers": CORS_HEADERS,
             "body": json.dumps({"error": str(e)})
         }
+
+def fetch_game_sessions(items):
+    game_sessions = []
+
+    for item in items:
+        try:
+            game_session_uuid = item.get("game_session_uuid")
+            if not game_session_uuid:
+                logger.error("Game session uuid not found in item: %s", item)
+                continue
+
+            result = lambda_client.invoke(
+                    FunctionName=f"get_game_session_{stage}",
+                    InvocationType="RequestResponse",
+                    Payload=json.dumps({"pathParameters": {"uuid": game_session_uuid}})
+                )
+
+            logger.info(f"Payload: {result}")
+            body = json.loads(result["Payload"].read()).get("body")
+            game_session_item = json.loads(body)
+
+            if not game_session_item:
+                logger.error("Game session with uuid %s not found", game_session_uuid)
+                continue
+
+            game_sessions.append(game_session_item)
+        except Exception as e:
+            logger.error("Error getting game session: %s", str(e), exc_info=True)
+            continue
+    return game_sessions
 
 def decimal_converter(obj):
     if isinstance(obj, Decimal):
