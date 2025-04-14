@@ -164,7 +164,7 @@ def lambda_handler(event, context):
                     "answer": "",
                     "correct_answer": correct_answer,
                     "timed_out": "",
-                    "user_question": f"{user}#{question['uuid']}"
+                    "user_question": f"{user["user_uuid"]}#{question['uuid']}"
                 }
                 logger.info("Item: %s", item)
                 game_answers_table.put_item(Item=item)
