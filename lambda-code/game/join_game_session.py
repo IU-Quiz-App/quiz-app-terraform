@@ -11,6 +11,7 @@ stage = os.environ.get('STAGE')
 domain = os.environ.get('DOMAIN')
 dynamodb = boto3.resource("dynamodb")
 game_sessions_table = dynamodb.Table(f"iu-quiz-game-sessions-{stage}")
+lambda_client = boto3.client("lambda")
 
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": f"https://{domain}",
@@ -75,6 +76,17 @@ def lambda_handler(event, context):
                 "#users": "users"
             }
         )
+
+        update_game_session_response = lambda_client.invoke(
+            FunctionName=f"send_updated_game_session_{stage}",
+            InvocationType="Event",
+            Payload=json.dumps({
+                "game_session_uuid": game_session_uuid,
+                "update_reason": "player-joined",
+            })
+        )
+
+        logger.info(f"Update game session lambda invoked: {update_game_session_response}")
         
         logger.info(f"User {user_uuid} added successfully to game session {game_session_uuid}")
         return response(200, {"message": f"User {user_uuid} with nickname {nickname} added successfully to game session {game_session_uuid}"})
