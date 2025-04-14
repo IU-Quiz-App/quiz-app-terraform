@@ -67,7 +67,6 @@ resource "aws_sfn_state_machine" "game_state_machine" {
       "Type": "Task",
       "Comment": "Wait for players to answer the question",
       "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
-      "Output": "{% $states.result.Payload %}",
       "Arguments": {
         "FunctionName": "${var.save_task_token_function_arn}",
         "Payload": {
