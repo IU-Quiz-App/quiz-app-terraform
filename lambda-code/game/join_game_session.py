@@ -25,14 +25,14 @@ def lambda_handler(event, context):
     body = json.loads(event["body"])
 
     game_session_uuid = body.get("game_session_uuid")
-    nickname = body.get("nickname")
+    # nickname = body.get("nickname")
 
     if not game_session_uuid:
         logger.error("Missing game_session_uuid")
         return response(400, {"error": "Missing game_session_uuid"})
-    if not nickname:
-        logger.error("Missing nickname")
-        return response(400, {"error": "Missing nickname"})
+    # if not nickname:
+    #     logger.error("Missing nickname")
+    #     return response(400, {"error": "Missing nickname"})
     
     auth_header = event["headers"].get("authorization", "")
     token = auth_header.split(" ")[1] if " " in auth_header else auth_header
@@ -51,6 +51,20 @@ def lambda_handler(event, context):
     new_user = {"user_uuid": user_uuid, "nickname": nickname}
     
     try:
+        game_session = game_sessions_table.get_item(
+            Key={"uuid": game_session_uuid}
+        ).get("Item")
+
+        logger.info(f"Game session: {game_session}")
+
+        if not game_session:
+            logger.error(f"Game session {game_session_uuid} does not exist")
+            return response(400, {"error": "Game session does not exist"})
+
+        if user_uuid in [user["user_uuid"] for user in game_session.get("users", [])]:
+            logger.error(f"User {user_uuid} already in game session {game_session_uuid}")
+            return response(409, {"error": "User already in game session"})
+
         game_sessions_table.update_item(
             Key = {"uuid": game_session_uuid},
             UpdateExpression = "SET #users = list_append(#users, :new_user)",
