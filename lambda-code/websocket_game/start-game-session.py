@@ -121,7 +121,7 @@ def lambda_handler(event, context):
             return
 
         if question_type == "all":
-            questions = get_all_questions_by_course_and_user(course_name, user_uuid)
+            questions = get_public_questions_by_course(course_name) + get_private_questions_by_course_and_user(course_name, user_uuid)
         elif question_type == "public":
             questions = get_public_questions_by_course(course_name)
         elif question_type == "private":
@@ -247,21 +247,6 @@ def get_private_questions_by_course_and_user(course_name, user_uuid):
             ":user": user_uuid,
             ":course": course_name,
             ":public": "false"
-        }
-    )
-    return response.get("Items", [])
-
-def get_all_questions_by_course_and_user(course_name, user_uuid):
-    response = question_table.query(
-        IndexName="user_course_index",
-        KeyConditionExpression="#created_by = :user AND #course = :course",
-        ExpressionAttributeNames={
-            "#created_by": "created_by",
-            "#course": "course"
-        },
-        ExpressionAttributeValues={
-            ":user": user_uuid,
-            ":course": course_name
         }
     )
     return response.get("Items", [])
