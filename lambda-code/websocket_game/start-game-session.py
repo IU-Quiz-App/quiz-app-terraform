@@ -59,6 +59,8 @@ def lambda_handler(event, context):
     course_name = body.get("course_name")
     quiz_length = body.get("quiz_length")
     question_response_time = body.get("question_response_time", default_response_time)
+    game_mode = body.get("game_mode", "competitive")
+    question_type = body.get("question_type", "all")
 
     if not game_session_uuid:
         logger.error("Missing game_session_uuid")
@@ -74,7 +76,17 @@ def lambda_handler(event, context):
         return
     if "question_response_time" not in body:
         logger.error(f"Missing question_response_time, set to default {default_response_time}")
-        ws_response(connection_id, {"error": f"Missing question_response_time, set to default {default_response_time}"})
+        ws_response(connection_id, {"info": f"Missing question_response_time, set to default {default_response_time}"})
+    if "game_mode" not in body:
+        logger.error(f"Missing game_mode, set to default {game_mode}")
+        ws_response(connection_id, {"info": f"Missing game_mode, set to default {game_mode}"})
+    if "question_type" not in body:
+        logger.error(f"Missing question_type, set to default {question_type}")
+        ws_response(connection_id, {"info": f"Missing question_type, set to default {question_type}"})
+    if question_type not in ["all", "public", "private"]:
+        logger.error(f"Invalid question_type: {question_type}")
+        ws_response(connection_id, {"error": "Invalid question_type"})
+        return
         
     try:
         quiz_length = int(quiz_length)
@@ -108,7 +120,13 @@ def lambda_handler(event, context):
             ws_response(connection_id, {"error": "User not authorized to start this game session"})
             return
 
-        questions = get_public_questions(course_name)
+        if question_type == "all":
+            questions = get_public_questions_by_course(course_name) + get_private_questions_by_course_and_user(course_name, user_uuid)
+        elif question_type == "public":
+            questions = get_public_questions_by_course(course_name)
+        elif question_type == "private":
+            questions = get_private_questions_by_course_and_user(course_name, user_uuid)
+
         logger.info("Got questions: %s", questions)
 
         # Check if questions are less than quiz_length
@@ -135,12 +153,15 @@ def lambda_handler(event, context):
         # Update the session with the questions and course name
         game_session_table.update_item(
             Key = {"uuid": game_session_uuid},
-            UpdateExpression = "SET questions = :questions, course_name = :course_name, started_at = :started_at, current_question = :current_question",
+            UpdateExpression = "SET questions = :questions, course_name = :course_name, started_at = :started_at, current_question = :current_question, game_mode = :game_mode, question_response_time = :question_response_time",
             ExpressionAttributeValues = {
                 ":questions": shuffled_questions,
                 ":course_name": course_name, 
                 ":started_at": started_at, 
-                ":current_question": 0}
+                ":current_question": 0,
+                ":game_mode": game_mode,
+                ":question_response_time": question_response_time
+            }
         )
 
         update_user_game_sessions(game_session_uuid, started_at)
@@ -197,7 +218,7 @@ def lambda_handler(event, context):
     except Exception as e:
         logger.error("Error starting the session: %s", str(e), exc_info=True)
     
-def get_public_questions(course_name):
+def get_public_questions_by_course(course_name):
     response = question_table.query(
         IndexName="question_visibility_index",
         KeyConditionExpression="#course = :course AND #pub = :public",
@@ -208,6 +229,24 @@ def get_public_questions(course_name):
         ExpressionAttributeValues={
             ":course": course_name,
             ":public": "true"
+        }
+    )
+    return response.get("Items", [])
+
+def get_private_questions_by_course_and_user(course_name, user_uuid):
+    response = question_table.query(
+        IndexName="user_course_index",
+        KeyConditionExpression="#created_by = :user AND #course = :course",
+        FilterExpression="#pub = :public",  # Nur noch ein einfacher Filter
+        ExpressionAttributeNames={
+            "#created_by": "created_by",
+            "#course": "course",
+            "#pub": "public"
+        },
+        ExpressionAttributeValues={
+            ":user": user_uuid,
+            ":course": course_name,
+            ":public": "false"
         }
     )
     return response.get("Items", [])

@@ -108,7 +108,8 @@ data "aws_iam_policy_document" "lambda_access_step_function" {
       "states:DescribeExecution",
       "states:ListExecutions",
       "states:ListStateMachines",
-      "states:DescribeStateMachine"
+      "states:DescribeStateMachine",
+      "states:SendTaskSuccess"
     ]
     resources = ["*"]
   }
