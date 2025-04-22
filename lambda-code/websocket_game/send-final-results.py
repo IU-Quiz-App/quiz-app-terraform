@@ -45,6 +45,8 @@ def lambda_handler(event, context):
 
         update_user_game_sessions(game_session_uuid, ended_at)
 
+        save_game_session_scores(game_session_uuid)
+
         update_game_session_response = lambda_client.invoke(
             FunctionName=f"send_updated_game_session_{stage}",
             InvocationType="Event",
@@ -88,3 +90,86 @@ def update_user_game_sessions(game_session_uuid, ended_at):
 
     except Exception as e:
         logger.error(f"Error updating user game sessions: {str(e)}", exc_info=True)
+
+def save_game_session_scores(game_session_uuid):
+    try:
+        game_session = game_session_table.get_item(
+            Key={"uuid": game_session_uuid}
+        ).get("Item", {})
+
+        if not game_session:
+            logger.error(f"Game session {game_session_uuid} not found")
+            return
+
+        questions = game_session.get("questions", [])
+
+        user_answers = get_all_answers_of_session(game_session_uuid)
+
+        new_user_answers = []
+
+        for question in questions:
+            answers = question.get("answers", [])
+            logger.info(f"Answers: {answers}")
+
+            correct_answer = next((answer for answer in answers if answer.get("isTrue")), None)
+            logger.info(f"Correct answer: {correct_answer}")
+            if not correct_answer:
+                logger.error(f"No correct answer found for question {question['uuid']}")
+                continue
+
+            question_user_answers = [
+                ua for ua in user_answers if ua["question_uuid"] == question["uuid"] and ua["answer"] == correct_answer["uuid"]
+            ]
+
+            # sort after answered_at
+            question_user_answers.sort(key=lambda x: x["answered_at"])
+
+
+            for i, answer in enumerate(question_user_answers):
+                if i == 0:
+                    answer["score"] = 4
+                elif i == 1:
+                    answer["score"] = 3
+                elif i == 2:
+                    answer["score"] = 2
+                else:
+                    answer["score"] = 1
+
+                new_user_answers.append(answer)
+
+
+
+        # save new user answers
+        for answer in new_user_answers:
+            game_answers_table.update_item(
+                Key={
+                    "game_session_uuid": game_session_uuid,
+                    "uuid": answer["uuid"]
+                },
+                UpdateExpression="SET #score = :score",
+                ExpressionAttributeNames={
+                    "#score": "score"
+                },
+                ExpressionAttributeValues={
+                    ":score": answer["score"]
+                }
+            )
+
+    except Exception as e:
+        logger.error(f"Error saving game session scores: {str(e)}", exc_info=True)
+
+def get_all_answers_of_session(game_session_uuid):
+    try:
+        response = game_answers_table.query(
+            KeyConditionExpression="#game_session_uuid = :game_session_uuid",
+            ExpressionAttributeNames={
+                "#game_session_uuid": "game_session_uuid"
+            },
+            ExpressionAttributeValues={
+                ":game_session_uuid": game_session_uuid
+            }
+        )
+        return response.get("Items", [])
+    except Exception as e:
+        logger.error("Error retrieving answers: %s", str(e))
+        return []
