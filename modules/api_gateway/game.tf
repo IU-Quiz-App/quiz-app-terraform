@@ -39,9 +39,11 @@ resource "aws_apigatewayv2_integration" "gateway_integration_get_game_session" {
 }
 
 resource "aws_apigatewayv2_route" "get_game_session_route" {
-  api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "GET /game/game-session/{uuid}"
-  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_get_game_session.id}"
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  route_key          = "GET /game/game-session/{uuid}"
+  target             = "integrations/${aws_apigatewayv2_integration.gateway_integration_get_game_session.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_gateway_authorizer.id
 }
 
 # get game sessions
@@ -61,9 +63,11 @@ resource "aws_apigatewayv2_integration" "gateway_integration_get_game_sessions" 
 }
 
 resource "aws_apigatewayv2_route" "get_game_sessions_route" {
-  api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "GET /game/game-sessions"
-  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_get_game_sessions.id}"
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  route_key          = "GET /game/game-sessions"
+  target             = "integrations/${aws_apigatewayv2_integration.gateway_integration_get_game_sessions.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_gateway_authorizer.id
 }
 
 # answer question
@@ -83,9 +87,11 @@ resource "aws_apigatewayv2_integration" "gateway_integration_answer_question" {
 }
 
 resource "aws_apigatewayv2_route" "answer_question_route" {
-  api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "POST /game/answer-question"
-  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_answer_question.id}"
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  route_key          = "POST /game/answer-question"
+  target             = "integrations/${aws_apigatewayv2_integration.gateway_integration_answer_question.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_gateway_authorizer.id
 }
 
 # get next question of the game
@@ -105,9 +111,11 @@ resource "aws_apigatewayv2_integration" "gateway_integration_get_next_game_quest
 }
 
 resource "aws_apigatewayv2_route" "gateway_integration_get_next_game_question" {
-  api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "GET /game/next-question/{uuid}"
-  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_get_next_game_question.id}"
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  route_key          = "GET /game/next-question/{uuid}"
+  target             = "integrations/${aws_apigatewayv2_integration.gateway_integration_get_next_game_question.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_gateway_authorizer.id
 }
 
 # join a game session
@@ -126,7 +134,9 @@ resource "aws_apigatewayv2_integration" "gateway_integration_join_game_session" 
   }
 }
 resource "aws_apigatewayv2_route" "join_game_session_route" {
-  api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "PUT /game/join-game-session"
-  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_join_game_session.id}"
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  route_key          = "PUT /game/join-game-session"
+  target             = "integrations/${aws_apigatewayv2_integration.gateway_integration_join_game_session.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_gateway_authorizer.id
 }

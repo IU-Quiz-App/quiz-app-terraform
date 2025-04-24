@@ -15,9 +15,11 @@ resource "aws_apigatewayv2_integration" "gateway_integration_question_get" {
 }
 
 resource "aws_apigatewayv2_route" "get_question_route" {
-  api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "GET /question/{uuid}"
-  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_question_get.id}"
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  route_key          = "GET /question/{uuid}"
+  target             = "integrations/${aws_apigatewayv2_integration.gateway_integration_question_get.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_gateway_authorizer.id
 }
 
 #get-list-of-questions
@@ -37,9 +39,11 @@ resource "aws_apigatewayv2_integration" "gateway_integration_questions_get" {
 }
 
 resource "aws_apigatewayv2_route" "get_questions_route" {
-  api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "GET /questions"
-  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_questions_get.id}"
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  route_key          = "GET /questions"
+  target             = "integrations/${aws_apigatewayv2_integration.gateway_integration_questions_get.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_gateway_authorizer.id
 }
 
 #post-question
@@ -59,9 +63,11 @@ resource "aws_apigatewayv2_integration" "gateway_integration_question_post" {
 }
 
 resource "aws_apigatewayv2_route" "post_question_route" {
-  api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "POST /question"
-  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_question_post.id}"
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  route_key          = "POST /question"
+  target             = "integrations/${aws_apigatewayv2_integration.gateway_integration_question_post.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_gateway_authorizer.id
 }
 
 #delete-question
@@ -81,9 +87,11 @@ resource "aws_apigatewayv2_integration" "gateway_integration_question_delete" {
 }
 
 resource "aws_apigatewayv2_route" "delete_question_route" {
-  api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "DELETE /question/{uuid}"
-  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_question_delete.id}"
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  route_key          = "DELETE /question/{uuid}"
+  target             = "integrations/${aws_apigatewayv2_integration.gateway_integration_question_delete.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_gateway_authorizer.id
 }
 
 
@@ -104,7 +112,9 @@ resource "aws_apigatewayv2_integration" "gateway_integration_question_put" {
 }
 
 resource "aws_apigatewayv2_route" "put_question_route" {
-  api_id    = aws_apigatewayv2_api.api_gateway.id
-  route_key = "PUT /question/{uuid}"
-  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration_question_put.id}"
+  api_id             = aws_apigatewayv2_api.api_gateway.id
+  route_key          = "PUT /question/{uuid}"
+  target             = "integrations/${aws_apigatewayv2_integration.gateway_integration_question_put.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_gateway_authorizer.id
 }
