@@ -79,10 +79,10 @@ def fetch_game_sessions(items):
                 continue
 
             result = lambda_client.invoke(
-                    FunctionName=f"get_game_session_{stage}",
-                    InvocationType="RequestResponse",
-                    Payload=json.dumps({"pathParameters": {"uuid": game_session_uuid}})
-                )
+                FunctionName=f"get_game_session_{stage}",
+                InvocationType="RequestResponse",
+                Payload=json.dumps({"pathParameters": {"uuid": game_session_uuid}})
+            )
 
             logger.info(f"Payload: {result}")
             body = json.loads(result["Payload"].read()).get("body")
@@ -144,6 +144,9 @@ def get_users_sessions(user_uuid, page, page_size):
             item for item in all_items
             if "started_at" in item and item.get("user_uuid") == user_uuid
         ]
+
+        # Sort the filtered items by started_at
+        filtered_items.sort(key=lambda x: x["started_at"], reverse=True)
 
         # Calculate total count
         total_count = len(filtered_items)
