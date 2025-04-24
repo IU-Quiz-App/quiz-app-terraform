@@ -1,5 +1,5 @@
 resource "aws_sfn_state_machine" "game_state_machine" {
-  name     = "QuizGameStateMachine"
+  name     = "QuizGameStateMachine-${var.stage}"
   role_arn = aws_iam_role.step_functions_role.arn
 
   definition = <<EOF

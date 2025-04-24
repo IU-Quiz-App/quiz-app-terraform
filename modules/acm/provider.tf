@@ -4,7 +4,7 @@ provider "aws" {
   allowed_account_ids = ["739275480216"]
   default_tags {
     tags = {
-      Environment          = "Dev"
+      Environment          = var.stage
       Created_by_Terraform = "True"
     }
   }

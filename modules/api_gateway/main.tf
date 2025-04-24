@@ -139,7 +139,7 @@ resource "aws_api_gateway_account" "websocket_api_gateway_account" {
 
 # Roles and Policies for logging
 resource "aws_iam_role" "api_gateway_logs_role" {
-  name = "api-gateway-logs-role"
+  name = "api_gateway_logs_role_${var.stage}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -156,7 +156,7 @@ resource "aws_iam_role" "api_gateway_logs_role" {
 }
 
 resource "aws_iam_policy" "api_gateway_logs_policy" {
-  name        = "api-gateway-logs-policy"
+  name        = "api_gateway_logs_policy_${var.stage}"
   description = "Policy to allow API Gateway to write to CloudWatch Logs"
 
   policy = jsonencode({

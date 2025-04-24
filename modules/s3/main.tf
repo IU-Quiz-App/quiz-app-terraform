@@ -120,7 +120,7 @@ resource "aws_s3_bucket_policy" "cloudfront_logging_policy" {
         Effect    = "Allow"
         Principal = "*"
         Action    = "s3:PutObject"
-        Resource  = "arn:aws:s3:::iu-quiz-logs-dev/*"
+        Resource  = "arn:aws:s3:::iu-quiz-logs-${var.stage}/*"
         Condition = {
           StringEquals = {
             "AWS:SourceAccount" = "${data.aws_caller_identity.current.account_id}"
@@ -133,7 +133,7 @@ resource "aws_s3_bucket_policy" "cloudfront_logging_policy" {
           Service = "logging.s3.amazonaws.com"
         }
         Action   = "s3:PutObject"
-        Resource = "arn:aws:s3:::iu-quiz-logs-dev/*"
+        Resource = "arn:aws:s3:::iu-quiz-logs-${var.stage}/*"
         Condition = {
           StringEquals = {
             "aws:SourceArn" = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${var.cloudfront_distribution_arn}"

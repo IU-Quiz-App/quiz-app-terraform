@@ -8,6 +8,7 @@ module "acm" {
   source           = "../acm"
   domain           = var.domain
   hosted_zone_name = var.hosted_zone_name
+  stage            = var.stage
 }
 
 module "api_gateway" {
