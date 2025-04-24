@@ -78,23 +78,9 @@ resource "aws_sfn_state_machine" "game_state_machine" {
       "Catch": [
         {
           "ErrorEquals": ["States.Timeout"],
-          "Next": "Set unanswered questions to false"
+          "Next": "Question answered"
         }
       ],
-      "Next": "Question answered"
-    },
-    "Set unanswered questions to false": {
-      "Type": "Task",
-      "Comment": "Set questions to false/unanswered that were not answered by players",
-      "Resource": "arn:aws:states:::lambda:invoke",
-      "Output": "{% $states.result.Payload %}",
-      "Arguments": {
-        "FunctionName": "${var.set_unanswered_questions_false_function_arn}",
-        "Payload": {
-          "game_session_uuid": "{% $game_session_uuid %}",
-          "current_question_uuid": "{% $current_question_uuid %}"
-        }
-      },
       "Next": "Question answered"
     },
     "Question answered": {
@@ -110,12 +96,32 @@ resource "aws_sfn_state_machine" "game_state_machine" {
           "wait_seconds": "{% $wait_until_answer_is_shown_seconds %}"
         }
       },
+      "Next": "Wait for late sent answers"
+    },
+    "Wait for late sent answers": {
+      "Type": "Wait",
+      "Comment": "Wait in case answer was sent late",
+      "Seconds": 1,
+      "Next": "Set unanswered questions to false"
+    },
+    "Set unanswered questions to false": {
+      "Type": "Task",
+      "Comment": "Set questions to false/unanswered that were not answered by players",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Output": "{% $states.result.Payload %}",
+      "Arguments": {
+        "FunctionName": "${var.set_unanswered_questions_false_function_arn}",
+        "Payload": {
+          "game_session_uuid": "{% $game_session_uuid %}",
+          "current_question_uuid": "{% $current_question_uuid %}"
+        }
+      },
       "Next": "Wait until answer is shown"
     },
     "Wait until answer is shown": {
       "Type": "Wait",
       "Comment": "Wait for countdown to show the correct answer",
-      "Seconds": "{% $wait_until_answer_is_shown_seconds %}",
+      "Seconds": "{% $wait_until_answer_is_shown_seconds - 1 %}",
       "Next": "Correct answer"
     },
     "Correct answer": {
