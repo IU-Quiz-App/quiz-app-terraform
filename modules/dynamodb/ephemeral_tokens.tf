@@ -10,7 +10,7 @@ resource "aws_dynamodb_table" "ephemeral_tokens" {
   }
 
   ttl {
-    attribute_name = "expiresAt"
+    attribute_name = "expires_at"
     enabled        = true
   }
 }
