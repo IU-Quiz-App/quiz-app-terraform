@@ -1,7 +1,12 @@
 resource "aws_dynamodb_table" "game_sessions" {
-  name         = "iu-quiz-game-sessions-${var.stage}"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "uuid"
+  name                        = "iu-quiz-game-sessions-${var.stage}"
+  billing_mode                = "PAY_PER_REQUEST"
+  deletion_protection_enabled = true
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  hash_key = "uuid"
 
   attribute {
     name = "uuid"

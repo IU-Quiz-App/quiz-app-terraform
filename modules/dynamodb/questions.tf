@@ -1,6 +1,10 @@
 resource "aws_dynamodb_table" "questions" {
-  name         = "iu-quiz-questions-${var.stage}"
-  billing_mode = "PAY_PER_REQUEST"
+  name                        = "iu-quiz-questions-${var.stage}"
+  billing_mode                = "PAY_PER_REQUEST"
+  deletion_protection_enabled = true
+  point_in_time_recovery {
+    enabled = true
+  }
 
   attribute {
     name = "uuid"
