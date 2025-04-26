@@ -46,8 +46,6 @@ def lambda_handler(event, context):
 
         update_user_game_sessions(game_session_uuid, ended_at)
 
-        save_game_session_scores(game_session_uuid)
-
         update_game_session_response = lambda_client.invoke(
             FunctionName=f"send_updated_game_session_{stage}",
             InvocationType="Event",
@@ -91,104 +89,6 @@ def update_user_game_sessions(game_session_uuid, ended_at):
 
     except Exception as e:
         logger.error(f"Error updating user game sessions: {str(e)}", exc_info=True)
-
-def save_game_session_scores(game_session_uuid):
-    try:
-        game_session = game_session_table.get_item(
-            Key={"uuid": game_session_uuid}
-        ).get("Item", {})
-
-        if not game_session:
-            logger.error(f"Game session {game_session_uuid} not found")
-            return
-
-        question_response_time = game_session.get("question_response_time", 0)
-        questions = game_session.get("questions", [])
-
-        user_answers = get_all_answers_of_session(game_session_uuid)
-
-        new_user_answers = []
-
-        for question in questions:
-            answers = question.get("answers", [])
-            logger.info(f"Answers: {answers}")
-
-            correct_answer = next((answer for answer in answers if answer.get("isTrue")), None)
-            logger.info(f"Correct answer: {correct_answer}")
-            if not correct_answer:
-                logger.error(f"No correct answer found for question {question['uuid']}")
-                continue
-
-            question_user_answers = [
-                ua for ua in user_answers if ua["question_uuid"] == question["uuid"] and ua["answer"] == correct_answer["uuid"]
-            ]
-
-            # sort after answered_at
-            question_user_answers.sort(key=lambda x: x["answered_at"])
-
-            question_sended_at = datetime.datetime.fromisoformat(question["sended_at"])
-            question_response_time_millis = question_response_time * 1000
-
-            for i, answer in enumerate(question_user_answers):
-                base_score = 300
-                bonus_score = 0
-                if i == 0:
-                    bonuspoints = 300
-                elif i == 1:
-                    bonuspoints = 200
-                elif i == 2:
-                    bonuspoints = 100
-                else:
-                    bonuspoints = 0
-
-                logger.info(f"Bonus score: {bonuspoints}")
-
-                time_base_score = 400
-                answered_at = datetime.datetime.fromisoformat(answer["answered_at"])
-                logger.info(f"Answered at: {answered_at}")
-
-                delta = answered_at - question_sended_at
-                delta_millis = (delta.total_seconds() * 1000) - 1000
-                logger.info(f"Delta millis: {delta_millis}")
-
-                time_left = question_response_time_millis - Decimal(delta_millis)
-                if time_left < 0:
-                    time_left = 0
-                if time_left > question_response_time_millis:
-                    time_left = question_response_time_millis
-
-                logger.info(f"Time left: {time_left}")
-                time_score_factor = Decimal(time_left) / Decimal(question_response_time_millis)
-                time_score = int(time_base_score * time_score_factor)
-                logger.info(f"Time score: {time_score}")
-                score = base_score + bonuspoints + time_score
-                logger.info(f"Score: {score}")
-
-                answer["score"] = score
-                new_user_answers.append(answer)
-
-
-
-
-
-        # save new user answers
-        for answer in new_user_answers:
-            game_answers_table.update_item(
-                Key={
-                    "game_session_uuid": game_session_uuid,
-                    "uuid": answer["uuid"]
-                },
-                UpdateExpression="SET #score = :score",
-                ExpressionAttributeNames={
-                    "#score": "score"
-                },
-                ExpressionAttributeValues={
-                    ":score": answer["score"]
-                }
-            )
-
-    except Exception as e:
-        logger.error(f"Error saving game session scores: {str(e)}", exc_info=True)
 
 def get_all_answers_of_session(game_session_uuid):
     try:
