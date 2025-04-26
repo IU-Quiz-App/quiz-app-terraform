@@ -3,6 +3,7 @@ import os
 import logging
 import datetime
 import boto3
+from decimal import Decimal
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -101,6 +102,7 @@ def save_game_session_scores(game_session_uuid):
             logger.error(f"Game session {game_session_uuid} not found")
             return
 
+        question_response_time = game_session.get("question_response_time", 0)
         questions = game_session.get("questions", [])
 
         user_answers = get_all_answers_of_session(game_session_uuid)
@@ -124,18 +126,48 @@ def save_game_session_scores(game_session_uuid):
             # sort after answered_at
             question_user_answers.sort(key=lambda x: x["answered_at"])
 
+            question_sended_at = datetime.datetime.fromisoformat(question["sended_at"])
+            question_response_time_millis = question_response_time * 1000
 
             for i, answer in enumerate(question_user_answers):
+                base_score = 300
+                bonus_score = 0
                 if i == 0:
-                    answer["score"] = 4
+                    bonuspoints = 300
                 elif i == 1:
-                    answer["score"] = 3
+                    bonuspoints = 200
                 elif i == 2:
-                    answer["score"] = 2
+                    bonuspoints = 100
                 else:
-                    answer["score"] = 1
+                    bonuspoints = 0
 
+                logger.info(f"Bonus score: {bonuspoints}")
+
+                time_base_score = 400
+                answered_at = datetime.datetime.fromisoformat(answer["answered_at"])
+                logger.info(f"Answered at: {answered_at}")
+
+                delta = answered_at - question_sended_at
+                delta_millis = (delta.total_seconds() * 1000) - 1000
+                logger.info(f"Delta millis: {delta_millis}")
+
+                time_left = question_response_time_millis - Decimal(delta_millis)
+                if time_left < 0:
+                    time_left = 0
+                if time_left > question_response_time_millis:
+                    time_left = question_response_time_millis
+
+                logger.info(f"Time left: {time_left}")
+                time_score_factor = Decimal(time_left) / Decimal(question_response_time_millis)
+                time_score = int(time_base_score * time_score_factor)
+                logger.info(f"Time score: {time_score}")
+                score = base_score + bonuspoints + time_score
+                logger.info(f"Score: {score}")
+
+                answer["score"] = score
                 new_user_answers.append(answer)
+
+
 
 
 
