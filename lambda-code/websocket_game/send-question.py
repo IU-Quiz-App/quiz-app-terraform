@@ -112,7 +112,7 @@ def save_question_scores(game_session, question, user_answers):
             return
 
         question_user_answers = [
-            ua for ua in user_answers if ua["question_uuid"] == question["uuid"] and ua["answer"] == correct_answer["uuid"]
+            ua for ua in user_answers if ua["answer"] == correct_answer["uuid"]
         ]
 
         # sort after answered_at
@@ -160,6 +160,13 @@ def save_question_scores(game_session, question, user_answers):
             new_user_answers.append(answer)
 
 
+        wrong_user_answers = [ua for ua in user_answers if ua["answer"] != correct_answer["uuid"]]
+
+        #append to new_user_answers
+        for answer in wrong_user_answers:
+            answer["score"] = 0
+            new_user_answers.append(answer)
+
         # save new user answers
         for answer in new_user_answers:
             game_answers_table.update_item(
@@ -177,6 +184,7 @@ def save_question_scores(game_session, question, user_answers):
             )
 
         logger.info(f"Saved user answers: {new_user_answers}")
+
         return new_user_answers
 
     except Exception as e:
