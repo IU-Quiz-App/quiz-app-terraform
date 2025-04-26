@@ -2,6 +2,7 @@ import json
 import os
 import logging
 import boto3
+import datetime
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -47,8 +48,14 @@ def lambda_handler(event, context):
             raise ValueError("Game session not found")
         
         question = get_question(game_session_item, current_question_index, action_type)
+
+        if action_type == "next-question":
+            sended_at = datetime.datetime.now().isoformat()
+            update_game_session(game_session_uuid, current_question_index, sended_at)
+
         send_question_to_all_players(game_session_uuid, question, action_type, wait_seconds)
-        question_uuid = game_session_item["questions"][current_question_index]["uuid"]
+        logger.info(f"Question sent to all players: {question}")
+        question_uuid = question["uuid"]
         logger.info(f"Question uuid: {question_uuid}")
         return response(200, {"message": "Question sent to all players", "current_question_uuid": question_uuid})
     
@@ -73,6 +80,21 @@ def get_question(game_session_item, question_index, action_type):
 
     logger.info(f"Question with shuffled answers: {question}")
     return question
+
+def update_game_session(game_session_uuid, question_index, sended_at):
+    game_sessions_table.update_item(
+        Key={"uuid": game_session_uuid},
+        UpdateExpression=f"SET #questions[{question_index}].#sended_at = :sended_at",
+        ExpressionAttributeValues={":sended_at": sended_at},
+        ConditionExpression="attribute_exists(#uuid)",
+        ExpressionAttributeNames={
+            "#uuid": "uuid",
+            "#questions": "questions",
+            "#sended_at": "sended_at"
+        }
+    )
+
+    logger.info(f"Game session {game_session_uuid} updated sended_at to {sended_at} for question index {question_index}")
 
 def send_question_to_all_players(game_session_uuid, question, action_type, wait_seconds):
     logger.info(f"Sending question to all clients in session: {game_session_uuid}")
