@@ -36,3 +36,9 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+*.zip
+/.idea/.gitignore
+/.idea/modules.xml
+/.idea/quiz-app-terraform.iml
+/.idea/vcs.xml

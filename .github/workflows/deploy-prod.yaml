@@ -1,0 +1,61 @@
+name: Deploy Infrastructure To Prod
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Enables manual trigger for terraform apply
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    name: Deploy Infrastructure To Prod
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      - name: Configure AWS Credentials
+        run: |
+          echo "Setting AWS Credentials..."
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "AWS_REGION=eu-central-1" >> $GITHUB_ENV
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: stages/prod/
+
+      - name: Terraform Format
+        run: terraform fmt -check
+        working-directory: stages/prod/
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: stages/prod/
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -out=tfplan
+        working-directory: stages/prod/
+        continue-on-error: false
+
+      - name: Upload Terraform Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: stages/prod/tfplan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve tfplan
+        working-directory: stages/prod/
